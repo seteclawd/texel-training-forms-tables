@@ -4,7 +4,6 @@
   // ── Data ────────────────────────────────────────────────────────────
   const crewMembers = [];
   let checklistState = {};
-  let itemSignatures = {}; // { key: { trainer: '', trainee: '' } }
   const DB_NAME = 'TexelFormsDB';
   const STORE_NAME = 'drafts';
   const DRAFT_KEY = 'edto-draft';
@@ -94,7 +93,6 @@
     await initIndexedDB();
     renderChecklist();
     initSignatures();
-    initAllItemSigs();
     initAutoSave();
     setupDateDefaults();
     await loadDraft();
@@ -128,9 +126,12 @@
   window.onTraineeChange = function() {
     const sel = document.getElementById('traineeName');
     const opt = sel.options[sel.selectedIndex];
-    document.getElementById('traineeRank').value = opt.dataset.rank || '';
+    const name = opt.textContent.split(' (')[0] || '';
+    const rank = opt.dataset.rank || '';
+    document.getElementById('traineeRank').value = rank;
     document.getElementById('licenceNo').value = opt.dataset.licence || '';
-    document.getElementById('footerTraineeName').value = opt.textContent.split(' (')[0] || '';
+    document.getElementById('footerTraineeName').value = name;
+    document.getElementById('footerTraineeRank').value = rank;
   };
 
   window.onTrainerChange = function() {
@@ -184,7 +185,6 @@
       sec.groups.forEach((group, gIdx) => {
         const key = `s${sec.id}-g${gIdx}`;  // Group key: s1-g0, s1-g1, etc.
         if (!checklistState[key]) checklistState[key] = '';
-        if (!itemSignatures[key]) itemSignatures[key] = { trainer: '', trainee: '' };
 
         const row = document.createElement('div');
         row.style.borderBottom = '1px solid #1a3a5f';
@@ -202,72 +202,6 @@
       });
     });
     updateProgressAll();
-  }
-
-  window.toggleItemSigs = function(key) {
-    const el = document.getElementById(`sigs-${key}`);
-    const btn = document.getElementById(`btn-sig-${key}`);
-    if (el.classList.contains('visible')) {
-      el.classList.remove('visible');
-      btn.classList.remove('active');
-    } else {
-      el.classList.add('visible');
-      btn.classList.add('active');
-      // Ensure canvases are initialized
-      initItemCanvas(`sig-tr-${key}`);
-      initItemCanvas(`sig-tt-${key}`);
-    }
-  };
-
-  function initAllItemSigs() {
-    // Canvases are initialized lazily on toggle
-  }
-
-  function initItemCanvas(id) {
-    const canvas = document.getElementById(id);
-    if (!canvas || canvas.dataset.inited) return;
-    canvas.dataset.inited = '1';
-    const ctx = canvas.getContext('2d');
-    ctx.strokeStyle = '#000';
-    ctx.lineWidth = 1.5;
-    ctx.lineCap = 'round';
-
-    let drawing = false;
-    let last = null;
-
-    function getPos(e) {
-      const rect = canvas.getBoundingClientRect();
-      const scaleX = canvas.width / rect.width;
-      const scaleY = canvas.height / rect.height;
-      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-      return { x: (clientX - rect.left) * scaleX, y: (clientY - rect.top) * scaleY };
-    }
-
-    function start(e) {
-      e.preventDefault();
-      drawing = true;
-      last = getPos(e);
-    }
-    function move(e) {
-      e.preventDefault();
-      if (!drawing) return;
-      const pos = getPos(e);
-      ctx.beginPath();
-      ctx.moveTo(last.x, last.y);
-      ctx.lineTo(pos.x, pos.y);
-      ctx.stroke();
-      last = pos;
-    }
-    function end() { drawing = false; }
-
-    canvas.addEventListener('mousedown', start);
-    canvas.addEventListener('mousemove', move);
-    canvas.addEventListener('mouseup', end);
-    canvas.addEventListener('mouseleave', end);
-    canvas.addEventListener('touchstart', start, {passive:false});
-    canvas.addEventListener('touchmove', move, {passive:false});
-    canvas.addEventListener('touchend', end);
   }
 
   window.setCheck = function(key, val) {
@@ -456,19 +390,6 @@
   function collectFormData(includeSigs = true) {
     const sel = document.getElementById('traineeName');
     const opt = sel.options[sel.selectedIndex];
-    // Collect per-item signatures
-    const itemSigs = {};
-    if (includeSigs) {
-      Object.keys(itemSignatures).forEach(key => {
-        const tr = getSignatureData(`sig-tr-${key}`);
-        const tt = getSignatureData(`sig-tt-${key}`);
-        itemSigs[key] = { trainer: tr, trainee: tt };
-      });
-    } else {
-      Object.keys(itemSignatures).forEach(key => {
-        itemSigs[key] = { ...itemSignatures[key] };
-      });
-    }
     return {
       traineeCode: sel.value,
       traineeName: opt ? opt.textContent.split(' (')[0] : '',
@@ -480,7 +401,6 @@
       edtoExpiry: document.getElementById('edtoExpiry').value,
       location: document.getElementById('location').value,
       checklist: { ...checklistState },
-      itemSignatures: itemSigs,
       trainerName: document.getElementById('trainerName').value,
       trainerCode: window._trainerCode || '',
       trainerSignature: includeSigs ? getSignatureData('trainerSig') : '',
@@ -831,8 +751,12 @@
     y += 12;
     
     doc.text('Trainee Name:', M + 2, y);
-    doc.line(M + 28, y + 1, 80, y + 1);
+    doc.line(M + 28, y + 1, 75, y + 1);
     if (data.footerTraineeName || data.traineeName) { doc.setFont('helvetica', 'bold'); doc.text(data.footerTraineeName || data.traineeName, M + 29, y); doc.setFont('helvetica', 'normal'); }
+    doc.setFont('helvetica', 'normal');
+    doc.text('RANK:', 85, y);
+    doc.line(97, y + 1, 125, y + 1);
+    if (data.traineeRank) { doc.setFont('helvetica', 'bold'); doc.text(data.traineeRank, 98, y); doc.setFont('helvetica', 'normal'); }
     doc.text('Trainee Signature:', 85, y);
     if (data.traineeSignature && data.traineeSignature.startsWith('data:')) {
       try { doc.addImage(data.traineeSignature, 'PNG', 110, y - 6, 45, 10); } catch(e) {}
