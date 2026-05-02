@@ -458,6 +458,17 @@
     const CW = PAGE_W - M * 2;
     let y = 8;
     
+    // Format date: dd/mmm/yyyy
+    function formatDate(dateStr) {
+      if (!dateStr) return '';
+      const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+      const d = new Date(dateStr + 'T00:00:00');
+      const dd = String(d.getDate()).padStart(2, '0');
+      const mmm = months[d.getMonth()];
+      const yyyy = d.getFullYear();
+      return dd + '/' + mmm + '/' + yyyy;
+    }
+    
     // Column positions - checkboxes centered per group
     const COL_TEXT = 110;     // Text column ends
     const COL_CHK = 113;      // Satisfactorily Completed
@@ -520,39 +531,47 @@
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(8);
     
+    // Row 1: Trainee Name | Rank (short line) | Licence No.
     doc.text('Trainee Name:', M + 2, ry);
+    doc.line(M + 26, ry + 1, 100, ry + 1);
     if (data.traineeName) { doc.setFont('helvetica', 'bold'); doc.text(data.traineeName, M + 28, ry); doc.setFont('helvetica', 'normal'); }
-    doc.line(M + 26, ry + 1, 95, ry + 1);
-    doc.text('Rank', 100, ry);
-    doc.line(108, ry + 1, 135, ry + 1);
-    if (data.traineeRank) { doc.setFont('helvetica', 'bold'); doc.text(data.traineeRank, 109, ry); doc.setFont('helvetica', 'normal'); }
+    doc.text('Rank:', 105, ry);
+    doc.line(117, ry + 1, 135, ry + 1);
+    if (data.traineeRank) { doc.setFont('helvetica', 'bold'); doc.text(data.traineeRank, 118, ry); doc.setFont('helvetica', 'normal'); }
+    doc.text('Licence No.:', 140, ry);
+    doc.line(160, ry + 1, PAGE_W - M - 2, ry + 1);
+    if (data.licenceNo) { doc.setFont('helvetica', 'bold'); doc.text(data.licenceNo, 161, ry); doc.setFont('helvetica', 'normal'); }
     
-    ry += 7;
-    doc.text('Sim Registration:', M + 2, ry);
-    doc.line(M + 32, ry + 1, 70, ry + 1);
-    if (data.simRegistration) { doc.setFont('helvetica', 'bold'); doc.text(data.simRegistration, M + 33, ry); doc.setFont('helvetica', 'normal'); }
-    doc.text('Licence No.:', 75, ry);
-    doc.line(90, ry + 1, 135, ry + 1);
-    if (data.licenceNo) { doc.setFont('helvetica', 'bold'); doc.text(data.licenceNo, 91, ry); doc.setFont('helvetica', 'normal'); }
-    
+    // Row 2: Type of session | Simulator/Aircraft X | Date
     ry += 7;
     doc.text('Type of session:', M + 2, ry);
-    doc.line(M + 32, ry + 1, 45, ry + 1);
     if (data.sessionType) { doc.setFont('helvetica', 'bold'); doc.text(data.sessionType, M + 33, ry); doc.setFont('helvetica', 'normal'); }
-    doc.text('Date:', 65, ry);
-    doc.line(72, ry + 1, 100, ry + 1);
-    if (data.date) { doc.setFont('helvetica', 'bold'); doc.text(data.date, 73, ry); doc.setFont('helvetica', 'normal'); }
-    doc.text('EDTO Validity Expiry:', 140, ry);
-    doc.line(165, ry + 1, PAGE_W - M - 2, ry + 1);
-    if (data.edtoExpiry) { doc.setFont('helvetica', 'bold'); doc.text(data.edtoExpiry, 166, ry); doc.setFont('helvetica', 'normal'); }
+    // Simulator checkbox
+    doc.text('[ ] Simulator', 65, ry);
+    if (data.sessionType === 'Simulator') { doc.setFont('helvetica', 'bold'); doc.text('[X]', 65, ry); doc.setFont('helvetica', 'normal'); }
+    // Aircraft checkbox
+    doc.text('[ ] Aircraft', 100, ry);
+    if (data.sessionType === 'Aircraft') { doc.setFont('helvetica', 'bold'); doc.text('[X]', 100, ry); doc.setFont('helvetica', 'normal'); }
+    doc.text('Date:', 140, ry);
+    doc.line(152, ry + 1, PAGE_W - M - 2, ry + 1);
+    if (data.date) { doc.setFont('helvetica', 'bold'); doc.text(formatDate(data.date), 153, ry); doc.setFont('helvetica', 'normal'); }
     
+    // Row 3: Location | Sim Registration
     ry += 7;
     doc.text('Location:', M + 2, ry);
-    doc.line(M + 22, ry + 1, 55, ry + 1);
+    doc.line(M + 22, ry + 1, 95, ry + 1);
     if (data.location) { doc.setFont('helvetica', 'bold'); doc.text(data.location, M + 23, ry); doc.setFont('helvetica', 'normal'); }
-    doc.text('Aircraft', PAGE_W - M - 20, ry);
+    doc.text('Sim Registration:', 100, ry);
+    doc.line(130, ry + 1, PAGE_W - M - 2, ry + 1);
+    if (data.simRegistration) { doc.setFont('helvetica', 'bold'); doc.text(data.simRegistration, 131, ry); doc.setFont('helvetica', 'normal'); }
     
-    y = 55;
+    // Row 4: EDTO Validity Expiry (moved 100px left, 15px gap)
+    ry += 7;
+    doc.text('EDTO Validity Expiry:', M + 2, ry);
+    doc.line(M + 47, ry + 1, 100, ry + 1);
+    if (data.edtoExpiry) { doc.setFont('helvetica', 'bold'); doc.text(formatDate(data.edtoExpiry), M + 48, ry); doc.setFont('helvetica', 'normal'); }
+    
+    y = 62;
     
     // ═══ COLUMN HEADERS ═══
     doc.setFillColor(200, 220, 240);
@@ -788,7 +807,8 @@
     doc.setFontSize(10);
     if (data.preparedBy) { doc.setFont('helvetica', 'bold'); doc.setFontSize(10); doc.text(data.preparedBy, M + 2, y); }
     doc.setFont('helvetica', 'normal');
-    doc.text('General Comments or Recommendations', M + 2, y);
+    doc.setFont('helvetica', 'bold');
+    doc.text('General Comments or Recommendations', M + 152, y);
     y += 6;
     doc.setDrawColor(0);
     doc.rect(M, y, CW, 20);
@@ -809,8 +829,8 @@
     y += 6;
     doc.line(30, y, 100, y);
     doc.line(140, y, 180, y);
-    if (data.preparedBy) { doc.setFont('helvetica', 'bold'); doc.setFontSize(8); doc.text(data.preparedBy, 30, y + 5); }
-    if (data.preparedDate) { doc.setFont('helvetica', 'bold'); doc.text(data.preparedDate, 160, y - 2); }
+    if (data.preparedBy) { doc.setFont('helvetica', 'bold'); doc.setFontSize(8); doc.text(data.preparedBy, 100 - doc.getTextWidth(data.preparedBy), y - 2); }
+    if (data.preparedDate) { doc.setFont('helvetica', 'bold'); doc.text(formatDate(data.preparedDate), 160, y - 2); }
     
     doc.setFont('helvetica', 'italic');
     doc.setFontSize(7);
