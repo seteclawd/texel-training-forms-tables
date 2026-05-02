@@ -32,7 +32,7 @@
         { t: 'No-Go Areas', n: 'e' }
       ]}
     ]},
-    { id: 2, title: '2. PRE-FLIGHT', groups: null, items: [
+    { id: 3, title: '2. PRE-FLIGHT', groups: null, items: [
       { t: 'Aircraft Status', n: '2.1', sub: [
         { t: 'Consult MEL', n: '1', sub: [
           { t: 'RVSM Requirements', n: 'a' },
@@ -45,7 +45,7 @@
       { t: 'Route Leg Winds - Insert winds', n: '2.5' },
       { t: 'EDTO Tracks and Distances - Verified and Checked', n: '2.6' }
     ]},
-    { id: 3, title: '3. ENROUTE - PRIOR TO EDTO ENTRY POINT', groups: null, items: [
+    { id: 4, title: '3. ENROUTE - PRIOR TO EDTO ENTRY POINT', groups: null, items: [
       { t: 'EDTO Clearance (40 Minutes before)', n: '3.1' },
       { t: 'Weather from OCC - SATPHONE 30 minutes before', n: '3.2' },
       { t: 'APU 15 minutes before ENTRY point', n: '3.3' },
@@ -63,7 +63,7 @@
       { t: 'Midpoint Check winds and times', n: '3.15' },
       { t: 'ETP CDU FIX page - updated', n: '3.16' }
     ]},
-    { id: 4, title: '4. ENROUTE - AFTER EDTO EXIT POINT', groups: null, items: [
+    { id: 5, title: '4. ENROUTE - AFTER EDTO EXIT POINT', groups: null, items: [
       { t: 'Mach Number', n: '4.1' },
       { t: 'CDU Offset (If applied during EDTO)', n: '4.2' },
       { t: 'Cruise FL - Review', n: '4.3' },
@@ -71,7 +71,7 @@
       { t: 'Fuel Crossfeed Valve', n: '4.5' },
       { t: 'ETL Entry - after shutdown', n: '4.6' }
     ]},
-    { id: 5, title: '5. NON-NORMALS', groups: null, items: [
+    { id: 6, title: '5. NON-NORMALS', groups: null, items: [
       { t: 'Re-Routing', n: '5.1', check: true },
       { t: 'Diversion Planning', n: '5.2', check: true },
       { t: 'MEL - APU Fault', n: '5.3', check: true },
@@ -727,7 +727,7 @@
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(10);
       doc.text(title, M + 2, y);
-      y += 6;
+      y += 3;
       
       drawCheckbox(COL_CHK, sStatus === 'pass');
       drawCheckbox(COL_REDO, sStatus === 'fail');
@@ -945,7 +945,7 @@
     doc.text('Page 2 of 2', PAGE_W - M - 2, PAGE_H - 5, { align: 'right' });
     
     return doc.output('datauristring');
-  }
+  }}
 
   // ── Preview & Submit ───────────────────────────────────────────────
   let currentPDFData = null;

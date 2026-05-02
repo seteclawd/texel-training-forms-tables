@@ -212,7 +212,7 @@ function generatePDFCode() {
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(10);
       doc.text(title, M + 2, y);
-      y += 6;
+      y += 3;
       
       drawCheckbox(COL_CHK, sStatus === 'pass');
       drawCheckbox(COL_REDO, sStatus === 'fail');
