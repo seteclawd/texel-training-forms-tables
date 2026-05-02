@@ -152,17 +152,20 @@ function generatePDFCode() {
         drawCheckbox(COL_CHK, gStatus === 'pass');
         drawCheckbox(COL_REDO, gStatus === 'fail');
         
-        // Trainer signature (from main signature at bottom)
-        if (data.trainerSignature && data.trainerSignature.startsWith('data:')) {
-          try {
-            doc.addImage(data.trainerSignature, 'PNG', COL_SIG, y - 3, 12, 5);
-          } catch(e) {}
-        }
-        // Trainer 3LC code
-        if (data.trainerCode) {
-          doc.setFont('helvetica', 'bold');
-          doc.setFontSize(7);
-          doc.text(data.trainerCode, COL_3LC, y);
+        // Trainer signature + 3LC: all sections except NON-NORMALS show always;
+        // NON-NORMALS only shows when marked as fail (Redo Required)
+        const showSigs = secId !== 6 || gStatus === 'fail';
+        if (showSigs) {
+          if (data.trainerSignature && data.trainerSignature.startsWith('data:')) {
+            try {
+              doc.addImage(data.trainerSignature, 'PNG', COL_SIG, y - 3, 12, 5);
+            } catch(e) {}
+          }
+          if (data.trainerCode) {
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(7);
+            doc.text(data.trainerCode, COL_3LC, y);
+          }
         }
         
         y += 5;

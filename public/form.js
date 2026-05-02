@@ -114,9 +114,20 @@
         opt.dataset.rank = c.position;
         opt.dataset.licence = c.licence || '';
         sel.appendChild(opt);
-        // Also populate trainer select
-        const topt = opt.cloneNode(true);
-        trainerSel.appendChild(topt);
+        // Trainer select: only SFI/SFE/TRI/TRE
+        if (c.is_sfi || c.is_sfe || c.is_tri || c.is_tre) {
+          const quals = [];
+          if (c.is_sfi) quals.push('SFI');
+          if (c.is_sfe) quals.push('SFE');
+          if (c.is_tri) quals.push('TRI');
+          if (c.is_tre) quals.push('TRE');
+          const topt = document.createElement('option');
+          topt.value = c.code;
+          topt.textContent = `${c.name} (${c.code})`;
+          topt.dataset.name = c.name;
+          topt.dataset.quals = quals.join(',');
+          trainerSel.appendChild(topt);
+        }
       });
     } catch (e) {
       console.warn('Failed to load crew, using offline cache if available');
@@ -138,6 +149,7 @@
     const sel = document.getElementById('trainerName');
     const opt = sel.options[sel.selectedIndex];
     window._trainerCode = opt ? opt.value : '';
+    window._trainerFullName = opt && opt.dataset.name ? opt.dataset.name : '';
   };
 
   window.getTrainerCode = function() {
@@ -401,7 +413,7 @@
       edtoExpiry: document.getElementById('edtoExpiry').value,
       location: document.getElementById('location').value,
       checklist: { ...checklistState },
-      trainerName: document.getElementById('trainerName').value,
+      trainerName: window._trainerFullName || document.getElementById('trainerName').value,
       trainerCode: window._trainerCode || '',
       trainerSignature: includeSigs ? getSignatureData('trainerSig') : '',
       traineeSignature: includeSigs ? getSignatureData('traineeSig') : '',
@@ -579,17 +591,20 @@
         drawCheckbox(COL_CHK, gStatus === 'pass');
         drawCheckbox(COL_REDO, gStatus === 'fail');
         
-        // Trainer signature (from main signature at bottom)
-        if (data.trainerSignature && data.trainerSignature.startsWith('data:')) {
-          try {
-            doc.addImage(data.trainerSignature, 'PNG', COL_SIG, y - 3, 12, 5);
-          } catch(e) {}
-        }
-        // Trainer 3LC code
-        if (data.trainerCode) {
-          doc.setFont('helvetica', 'bold');
-          doc.setFontSize(7);
-          doc.text(data.trainerCode, COL_3LC, y);
+        // Trainer signature + 3LC: all sections except NON-NORMALS show always;
+        // NON-NORMALS only shows when marked as fail (Redo Required)
+        const showSigs = secId !== 6 || gStatus === 'fail';
+        if (showSigs) {
+          if (data.trainerSignature && data.trainerSignature.startsWith('data:')) {
+            try {
+              doc.addImage(data.trainerSignature, 'PNG', COL_SIG, y - 3, 12, 5);
+            } catch(e) {}
+          }
+          if (data.trainerCode) {
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(7);
+            doc.text(data.trainerCode, COL_3LC, y);
+          }
         }
         
         y += 5;
