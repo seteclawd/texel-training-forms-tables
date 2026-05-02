@@ -9,69 +9,77 @@
   const STORE_NAME = 'drafts';
   const DRAFT_KEY = 'edto-draft';
 
+  // Groups-based structure: each group has one checkbox pair
   const SECTIONS = [
-    { id: 1, title: 'FLIGHT PREPARATION BRIEFING', items: [
-      'Route Briefing Contents (TAFS, METARs, NOTAMS, SIG WX, Flight Plan, Waypoints, No-Go Areas)'
+    { id: 1, title: 'FLIGHT PREPARATION BRIEFING', groups: [
+      { title: 'Route Briefing Contents:', items: [
+        'TAFS & METARS for destination, alternates & ERAs',
+        'NOTAMS for destination, Alternates and ERAs and route',
+        'SIG WX & Upper Wind Charts',
+        'SIGMETS'
+      ]},
+      { title: 'Flight Plan:', items: [
+        'Check Flt No. Date, Route & A/C Registration',
+        'Note - Max FL, average W/C and Max Shear',
+        'Note - Trip fuel and flight time',
+        'Note - Critical Fuel - Calculate diversion fuel',
+        'Note - TOTAL FUEL'
+      ]},
+      { title: 'FD Pro Route/Waypoints:', items: [
+        'Insert OFP Route',
+        'Create and insert ENTRY and EXIT waypoints',
+        'Verify EDTO waypoints (incl. EDTO Entry and Exit points)',
+        'Create and insert ETPs (as required)',
+        'No-Go Areas'
+      ]}
     ]},
-    { id: 2, title: 'ROUTE BRIEFING', items: [
-      'TAFS \u0026 METARs for destination, alternates \u0026 ERAs',
-      'NOTAMS for destination, Alternates and ERAs and route',
-      'SIG WX \u0026 Upper Wind Charts',
-      'SIGMETS',
-      'Flight Plan: Check Flt No, Date, Route \u0026 A/C Registration',
-      'Note Max FL, average W/C and Max Shear',
-      'Note Trip fuel and flight time',
-      'Note Critical Fuel - Calculate diversion fuel from critical point to diversion airfield',
-      'Note TOTAL FUEL FD Pro',
-      'Route/Waypoints: Insert OFP Route',
-      'Create and insert ENTRY and EXIT waypoints on FD Pro',
-      'Verify EDTO waypoints (incl. EDTO Entry and Exit points)',
-      'Create and insert ETPs on FD Pro',
-      'No-Go Areas'
+    { id: 3, title: 'PRE-FLIGHT', groups: [
+      { title: 'Aircraft Status:', items: [
+        'Consult MEL - RVSM Requirements',
+        'Consult MEL - EDTO Requirements'
+      ]},
+      { title: 'Fuel Crossfeed Valve:', items: ['i.a.w. FCOM Check'] },
+      { title: 'Aircraft Clocks:', items: ['UTC set'] },
+      { title: 'Flight Plan Route:', items: ['Enter FPL into FMC'] },
+      { title: 'Route Leg Winds:', items: ['Insert winds'] },
+      { title: 'EDTO Tracks and Distances:', items: ['Verified and Checked'] }
     ]},
-    { id: 3, title: 'PRE-FLIGHT', items: [
-      'Aircraft Status / MEL / RVSM Requirements / EDTO Requirements',
-      'Fuel Crossfeed Valve (FCOM check)',
-      'Aircraft Clocks - UTC set',
-      'Flight Plan Route - Enter FPL into FMC',
-      'Route Leg Winds - Insert winds',
-      'EDTO Tracks and Distances - Verified and Checked'
+    { id: 4, title: 'ENROUTE - PRIOR TO EDTO ENTRY POINT', groups: [
+      { title: 'EDTO Clearance:', items: ['40 Minutes before'] },
+      { title: 'Weather from OCC:', items: ['SATPHONE 30 minutes before'] },
+      { title: 'APU:', items: ['15 minutes before ENTRY point'] },
+      { title: 'EDTO Significant Systems Operation:', items: ['Check'] },
+      { title: 'FMC Position:', items: ['Check'] },
+      { title: 'FMC Route:', items: ['If changed then confirm modification (CPDLC)'] },
+      { title: 'CDU FIX page:', items: ['adequate AD 428nm ARCs'] },
+      { title: 'Flight Level and Mach Number:', items: ['as cleared'] },
+      { title: 'HF and SELCAL:', items: ['Checked'] },
+      { title: 'Radios and Transponder:', items: ['Check'] },
+      { title: 'Approaching Waypoints:', items: ['TRK and DIST'] },
+      { title: 'Passing Each Waypoint:', items: ['Actual Track'] },
+      { title: 'Position Report:', items: ['Check'] },
+      { title: '10 Min after passing waypoint:', items: ['Check'] },
+      { title: 'Midpoint Check:', items: ['winds and times'] },
+      { title: 'ETP CDU FIX page:', items: ['updated'] }
     ]},
-    { id: 4, title: 'ENROUTE - PRIOR TO EDTO ENTRY POINT', items: [
-      'EDTO Clearance (40 Minutes before)',
-      'Weather from OCC - SATPHONE 30 minutes before',
-      'APU 15 minutes before ENTRY point',
-      'EDTO Significant Systems Operation',
-      'FMC Position - Check',
-      'FMC Route - If changed confirm modification (CPDLC)',
-      'CDU FIX page - adequate AD 428nm ARCs',
-      'Flight Level and Mach Number - as cleared',
-      'HF and SELCAL - Checked',
-      'Radios and Transponder',
-      'Approaching Waypoints TRK and DIST',
-      'Passing Each Waypoint Actual Track',
-      'Position Report - 10 Minutes after passing waypoint',
-      'Midpoint Check winds and times',
-      'ETP CDU FIX page - updated'
+    { id: 5, title: 'ENROUTE - AFTER EDTO EXIT POINT', groups: [
+      { title: 'Mach Number:', items: ['Check'] },
+      { title: 'CDU Offset:', items: ['If applied during EDTO'] },
+      { title: 'Cruise FL:', items: ['Review'] },
+      { title: 'FMC Position:', items: ['Checked'] },
+      { title: 'Fuel Crossfeed Valve:', items: ['Check'] },
+      { title: 'ETL Entry:', items: ['after shutdown'] }
     ]},
-    { id: 5, title: 'ENROUTE - AFTER EDTO EXIT POINT', items: [
-      'Mach Number',
-      'CDU Offset (If applied during EDTO)',
-      'Cruise FL - Review',
-      'FMC Position - Checked',
-      'Fuel Crossfeed Valve',
-      'ETL Entry - after shutdown'
-    ]},
-    { id: 6, title: 'NON-NORMALS', items: [
-      'Re-Routing',
-      'Diversion Planning',
-      'MEL - APU Fault',
-      'Engine Non-Normal requiring diversion',
-      'Pressurisation Non-Normal requiring diversion',
-      'Navigation Non-Normal',
-      'Weather Contingency',
-      'Non-Comms Contingency',
-      'Other Non-Normal'
+    { id: 6, title: 'NON-NORMALS', groups: [
+      { title: 'Re-Routing:', items: ['Check'] },
+      { title: 'Diversion Planning:', items: ['Check'] },
+      { title: 'MEL - APU Fault:', items: ['Check'] },
+      { title: 'Engine Non-Normal requiring diversion:', items: ['Check'] },
+      { title: 'Pressurisation Non-Normal requiring diversion:', items: ['Check'] },
+      { title: 'Navigation Non-Normal:', items: ['Check'] },
+      { title: 'Weather Contingency:', items: ['Check'] },
+      { title: 'Non-Comms Contingency:', items: ['Check'] },
+      { title: 'Other Non-Normal:', items: ['Check'] }
     ]}
   ];
 
@@ -153,8 +161,9 @@
   function renderChecklist() {
     SECTIONS.forEach(sec => {
       const container = document.getElementById(`section-${sec.id}`);
-      sec.items.forEach((item, idx) => {
-        const key = `s${sec.id}-i${idx}`;
+      if (!sec.groups) return;
+      sec.groups.forEach((group, gIdx) => {
+        const key = `s${sec.id}-g${gIdx}`;  // Group key: s1-g0, s1-g1, etc.
         if (!checklistState[key]) checklistState[key] = '';
         if (!itemSignatures[key]) itemSignatures[key] = { trainer: '', trainee: '' };
 
@@ -162,13 +171,14 @@
         row.style.borderBottom = '1px solid #1a3a5f';
         row.innerHTML = `
           <div class="checklist-item">
-            <span class="checklist-text">${escapeHtml(item)}</span>
+            <span class="checklist-text"><strong>${escapeHtml(group.title)}</strong></span>
             <div class="checklist-actions">
               <button class="btn-check pass ${checklistState[key]==='pass'?'active':''}" onclick="setCheck('${key}','pass')">✅ Completed</button>
               <button class="btn-check fail ${checklistState[key]==='fail'?'active':''}" onclick="setCheck('${key}','fail')">❌ Redo</button>
               <button class="btn-toggle-sigs ${itemSignatures[key].trainer || itemSignatures[key].trainee ? 'active' : ''}" id="btn-sig-${key}" onclick="toggleItemSigs('${key}')">✍️ Sigs</button>
             </div>
           </div>
+          <div class="group-items">${group.items.map(i => `<div class="sub-item">\u25B8 ${escapeHtml(i)}</div>`).join('')}</div>
           <div class="item-sigs" id="sigs-${key}">
             <div class="sig-pair">
               <div class="sig-mini-wrap">
@@ -272,12 +282,13 @@
 
   function updateProgressAll() {
     SECTIONS.forEach(sec => {
+      if (!sec.groups) return;
       let done = 0;
-      sec.items.forEach((_, idx) => {
-        if (checklistState[`s${sec.id}-i${idx}`]) done++;
+      sec.groups.forEach((_, gIdx) => {
+        if (checklistState[`s${sec.id}-g${gIdx}`]) done++;
       });
       const el = document.getElementById(`progress-${sec.id}`);
-      if (el) el.textContent = `${done}/${sec.items.length}`;
+      if (el) el.textContent = `${done}/${sec.groups.length}`;
     });
   }
 
@@ -499,24 +510,22 @@
     
     const PAGE_W = 210;
     const PAGE_H = 297;
-    const M = 10; // margin
-    const CW = PAGE_W - M * 2; // content width = 190mm
+    const M = 10;
+    const CW = PAGE_W - M * 2;
     let y = 8;
     
-    // ═══ COLUMN LAYOUT ═══
-    // Text takes 60%, columns take 40% of content width
-    const TEXT_END = 115;    // Item text ends here
-    const COL1_X = 118;     // Satisfactorily Completed checkbox
-    const COL2_X = 142;     // Incomplete or Redo checkbox
-    const COL3_X = 168;     // Trainer Signature (placeholder)
-    const COL4_X = 188;     // Trainer Texel 3LC (placeholder)
-    const BOX_SIZE = 3.5;
+    // Column positions - checkboxes centered per group
+    const COL_TEXT = 110;     // Text column ends
+    const COL_CHK = 113;      // Satisfactorily Completed
+    const COL_REDO = 138;     // Incomplete or Redo
+    const COL_SIG = 163;      // Trainer Signature
+    const COL_3LC = 182;      // Trainer Texel 3LC
+    const BOX = 5;            // Checkbox size (bigger for groups)
     
     function checkPage(needed) {
-      if (y > PAGE_H - (needed || 20)) {
+      if (y > PAGE_H - (needed || 25)) {
         doc.addPage();
         y = 22;
-        // Page 2+ header
         doc.setFontSize(8);
         doc.setFont('helvetica', 'normal');
         doc.text('Form:TA-TD-20', M, 10);
@@ -533,10 +542,11 @@
     }
     
     function drawCheckbox(x, checked) {
-      doc.rect(x, y - 2.5, BOX_SIZE, BOX_SIZE);
+      doc.rect(x, y - 3, BOX, BOX);
       if (checked) {
-        doc.setFontSize(8);
-        doc.text('X', x + 0.7, y + 0.3);
+        doc.setFontSize(12);
+        doc.setFont('helvetica', 'bold');
+        doc.text('X', x + 1, y + 0.5);
       }
     }
     
@@ -566,7 +576,6 @@
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(8);
     
-    // Row 1
     doc.text('Trainee Name:', M + 2, ry);
     if (data.traineeName) { doc.setFont('helvetica', 'bold'); doc.text(data.traineeName, M + 28, ry); doc.setFont('helvetica', 'normal'); }
     doc.line(M + 26, ry + 1, 95, ry + 1);
@@ -574,7 +583,6 @@
     doc.line(108, ry + 1, 135, ry + 1);
     if (data.traineeRank) { doc.setFont('helvetica', 'bold'); doc.text(data.traineeRank, 109, ry); doc.setFont('helvetica', 'normal'); }
     
-    // Row 2
     ry += 7;
     doc.text('Sim Registration:', M + 2, ry);
     doc.line(M + 32, ry + 1, 70, ry + 1);
@@ -583,7 +591,6 @@
     doc.line(90, ry + 1, 135, ry + 1);
     if (data.licenceNo) { doc.setFont('helvetica', 'bold'); doc.text(data.licenceNo, 91, ry); doc.setFont('helvetica', 'normal'); }
     
-    // Row 3
     ry += 7;
     doc.text('Type of session:', M + 2, ry);
     doc.line(M + 32, ry + 1, 45, ry + 1);
@@ -591,12 +598,10 @@
     doc.text('Date:', 65, ry);
     doc.line(72, ry + 1, 100, ry + 1);
     if (data.date) { doc.setFont('helvetica', 'bold'); doc.text(data.date, 73, ry); doc.setFont('helvetica', 'normal'); }
-    // EDTO Validity Expiry - moved 20px left
-    doc.text('EDTO Validity Expiry:', 95, ry);
-    doc.line(120, ry + 1, PAGE_W - M - 2, ry + 1);
-    if (data.edtoExpiry) { doc.setFont('helvetica', 'bold'); doc.text(data.edtoExpiry, 121, ry); doc.setFont('helvetica', 'normal'); }
+    doc.text('EDTO Validity Expiry:', 110, ry);
+    doc.line(135, ry + 1, PAGE_W - M - 2, ry + 1);
+    if (data.edtoExpiry) { doc.setFont('helvetica', 'bold'); doc.text(data.edtoExpiry, 136, ry); doc.setFont('helvetica', 'normal'); }
     
-    // Row 4
     ry += 7;
     doc.text('Location:', M + 2, ry);
     doc.line(M + 22, ry + 1, 55, ry + 1);
@@ -606,169 +611,191 @@
     y = 55;
     
     // ═══ COLUMN HEADERS ═══
-    doc.setFillColor(220, 220, 220);
+    doc.setFillColor(200, 220, 240);
     doc.rect(M, y - 4, CW, 10, 'F');
     doc.setDrawColor(0);
     doc.rect(M, y - 4, CW, 10);
-    // Vertical separators
-    doc.line(COL1_X - 2, y - 4, COL1_X - 2, y + 6);
-    doc.line(COL2_X - 2, y - 4, COL2_X - 2, y + 6);
-    doc.line(COL3_X - 2, y - 4, COL3_X - 2, y + 6);
+    doc.line(COL_CHK - 1, y - 4, COL_CHK - 1, y + 6);
+    doc.line(COL_REDO - 1, y - 4, COL_REDO - 1, y + 6);
+    doc.line(COL_SIG - 1, y - 4, COL_SIG - 1, y + 6);
     
     doc.setFont('helvetica', 'bold');
-    doc.setFontSize(5);
-    doc.text('Satisfactorily', COL1_X, y);
-    doc.text('Completed', COL1_X, y + 3);
-    doc.text('Incomplete', COL2_X, y);
-    doc.text('or Redo', COL2_X, y + 2);
-    doc.text('Required', COL2_X, y + 4);
-    doc.text('Trainer', COL3_X + 3, y);
-    doc.text('Trainer', COL4_X, y);
-    doc.text('Signature', COL3_X + 3, y + 3);
-    doc.text('Texel 3LC', COL4_X, y + 3);
+    doc.setFontSize(5.5);
+    doc.text('Satisfactorily', COL_CHK, y);
+    doc.text('Completed', COL_CHK, y + 3);
+    doc.text('Incomplete', COL_REDO, y);
+    doc.text('or Redo', COL_REDO, y + 2);
+    doc.text('Required', COL_REDO, y + 4);
+    doc.text('Trainer', COL_SIG + 2, y);
+    doc.text('Trainer', COL_3LC, y);
+    doc.text('Signature', COL_SIG + 2, y + 3);
+    doc.text('Texel 3LC', COL_3LC, y + 3);
     y += 8;
     
-    // ═══ DRAW SECTION ═══
-    function drawSection(title, items, secId) {
+    // ═══ DRAW SECTION WITH GROUPS ═══
+    // Groups have checkboxes, sub-items don't
+    function drawSection(title, groups, secId) {
       checkPage(10);
       doc.setFont('helvetica', 'bold');
-      doc.setFontSize(9);
+      doc.setFontSize(10);
       doc.text(title, M + 2, y);
-      y += 5;
+      y += 6;
       
-      doc.setFont('helvetica', 'normal');
-      doc.setFontSize(7);
-      
-      items.forEach((item, idx) => {
-        checkPage(5);
-        const key = 's' + secId + '-i' + idx;
-        const status = data.checklist ? data.checklist[key] : '';
+      groups.forEach((group, gIdx) => {
+        checkPage(8);
+        const gKey = 's' + secId + '-g' + gIdx;  // Group key: s1-g0, s1-g1, etc.
+        const gStatus = data.checklist ? data.checklist[gKey] : '';
         
-        // Checkboxes
-        drawCheckbox(COL1_X, status === 'pass');
-        drawCheckbox(COL2_X, status === 'fail');
+        // Group title (bold) with checkboxes
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(8);
+        doc.text(group.title, M + 2, y + 1);
         
-        // Trainer signature from itemSignatures
-        const sigs = data.itemSignatures ? data.itemSignatures[key] : null;
-        if (sigs && sigs.trainer && sigs.trainer.startsWith('data:')) {
-          try {
-            doc.addImage(sigs.trainer, 'PNG', COL3_X, y - 3, 16, 6);
-          } catch(e) {}
-        } else {
-          doc.setDrawColor(200, 200, 200);
-          doc.line(COL3_X, y + 1, COL3_X + 16, y + 1);
-          doc.setDrawColor(0);
-        }
+        // Checkboxes for group
+        drawCheckbox(COL_CHK, gStatus === 'pass');
+        drawCheckbox(COL_REDO, gStatus === 'fail');
         
-        // Texel 3LC line
-        doc.setDrawColor(200, 200, 200);
-        doc.line(COL4_X, y + 1, COL4_X + 12, y + 1);
+        // Signature line for group
+        doc.setDrawColor(180, 180, 180);
+        doc.line(COL_SIG, y + 2, COL_SIG + 16, y + 2);
+        doc.line(COL_3LC, y + 2, COL_3LC + 10, y + 2);
         doc.setDrawColor(0);
         
-        // Item text
-        doc.text(item, M + 4, y + 1);
-        y += 4.5;
+        // Draw trainer signature if available
+        if (data.itemSignatures && data.itemSignatures[gKey]) {
+          const sigs = data.itemSignatures[gKey];
+          if (sigs.trainer && sigs.trainer.startsWith('data:')) {
+            try { doc.addImage(sigs.trainer, 'PNG', COL_SIG, y - 2, 16, 6); } catch(e) {}
+          }
+        }
+        
+        y += 6;
+        
+        // Sub-items (indented, no checkboxes)
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(7);
+        group.items.forEach(item => {
+          checkPage(4);
+          const bullet = item.startsWith('  ') ? '\u25B8 ' : '';  // Triangle bullet
+          doc.text(bullet + item.trim(), M + 6, y + 1);
+          y += 4;
+        });
+        
+        y += 2;
       });
-      y += 2;
     }
     
     // ═══ ALL SECTIONS ═══
     drawSection('FLIGHT PREPARATION BRIEFING', [
-      'Route Briefing Contents:',
-      '  - TAFS & METARS for destination, alternates & ERAs',
-      '  - NOTAMS for destination, Alternates and ERAs and route',
-      '  - SIG WX & Upper Wind Charts',
-      '  - SIGMETS',
-      'Flight Plan: Check Flt No. Date, Route & A/C Registration',
-      '  - Note - Max FL, average W/C and Max Shear',
-      '  - Note - Trip fuel and flight time',
-      '  - Note - Critical Fuel - Calculate diversion fuel',
-      '  - Note - TOTAL FUEL',
-      'FD Pro Route/Waypoints:',
-      '  - Insert OFP Route',
-      '  - Create and insert ENTRY and EXIT waypoints',
-      '  - Verify EDTO waypoints',
-      '  - Create and insert ETPs (as required)',
-      '  - No-Go Areas'
+      { title: 'Route Briefing Contents:', items: [
+        'TAFS & METARS for destination, alternates & ERAs',
+        'NOTAMS for destination, Alternates and ERAs and route',
+        'SIG WX & Upper Wind Charts',
+        'SIGMETS'
+      ]},
+      { title: 'Flight Plan:', items: [
+        'Check Flt No. Date, Route & A/C Registration',
+        'Note - Max FL, average W/C and Max Shear',
+        'Note - Trip fuel and flight time',
+        'Note - Critical Fuel - Calculate diversion fuel',
+        'Note - TOTAL FUEL'
+      ]},
+      { title: 'FD Pro Route/Waypoints:', items: [
+        'Insert OFP Route',
+        'Create and insert ENTRY and EXIT waypoints',
+        'Verify EDTO waypoints (incl. EDTO Entry and Exit points)',
+        'Create and insert ETPs (as required)',
+        'No-Go Areas'
+      ]}
     ], 1);
     
     drawSection('PRE-FLIGHT', [
-      'Aircraft Status - Consult MEL',
-      '  - RVSM Requirements',
-      '  - EDTO Requirements',
-      'Fuel Crossfeed Valve - i.a.w. FCOM',
-      'Aircraft Clocks - UTC set',
-      'Flight Plan Route - Enter FPL into FMC',
-      'Route Leg Winds - Insert winds',
-      'EDTO Tracks and Distances - Verified'
+      { title: 'Aircraft Status:', items: [
+        'Consult MEL - RVSM Requirements',
+        'Consult MEL - EDTO Requirements'
+      ]},
+      { title: 'Fuel Crossfeed Valve:', items: [
+        'i.a.w. FCOM Fuel Crossfeed Valve Check'
+      ]},
+      { title: 'Aircraft Clocks:', items: [
+        'UTC set'
+      ]},
+      { title: 'Flight Plan Route:', items: [
+        'Enter FPL into FMC'
+      ]},
+      { title: 'Route Leg Winds:', items: [
+        'Insert winds'
+      ]},
+      { title: 'EDTO Tracks and Distances:', items: [
+        'Verified and Checked'
+      ]}
     ], 3);
     
     drawSection('ENROUTE - PRIOR TO EDTO ENTRY POINT', [
-      'EDTO Clearance (40 Minutes before)',
-      'Weather from OCC - SATPHONE 30 minutes before',
-      'APU 15 minutes before ENTRY point',
-      'EDTO Significant Systems Operation',
-      'FMC Position - Check',
-      'FMC Route - confirm modification (CPDLC)',
-      'CDU FIX page - adequate AD 428nm ARCs',
-      'Flight Level and Mach Number - as cleared',
-      'HF and SELCAL - Checked',
-      'Radios and Transponder',
-      'Approaching Waypoints TRK and DIST',
-      'Passing Each Waypoint Actual Track',
-      'Position Report',
-      '10 Minute after passing waypoint',
-      'Midpoint Check winds and times',
-      'ETP CDU FIX page - updated'
+      { title: 'EDTO Clearance:', items: ['40 Minutes before'] },
+      { title: 'Weather from OCC:', items: ['SATPHONE 30 minutes before'] },
+      { title: 'APU:', items: ['15 minutes before ENTRY point'] },
+      { title: 'EDTO Significant Systems Operation:', items: ['Check'] },
+      { title: 'FMC Position:', items: ['Check'] },
+      { title: 'FMC Route:', items: ['If changed then confirm modification (CPDLC)'] },
+      { title: 'CDU FIX page:', items: ['adequate AD 428nm ARCs'] },
+      { title: 'Flight Level and Mach Number:', items: ['as cleared'] },
+      { title: 'HF and SELCAL:', items: ['Checked'] },
+      { title: 'Radios and Transponder:', items: ['Check'] },
+      { title: 'Approaching Waypoints:', items: ['TRK and DIST'] },
+      { title: 'Passing Each Waypoint:', items: ['Actual Track'] },
+      { title: 'Position Report:', items: ['Check'] },
+      { title: '10 Minute after passing waypoint:', items: ['Check'] },
+      { title: 'Midpoint Check:', items: ['winds and times'] },
+      { title: 'ETP CDU FIX page:', items: ['updated'] }
     ], 4);
     
     // ═══ PAGE 2 ═══
-    checkPage(100);
+    checkPage(120);
     
     drawSection('ENROUTE - AFTER EDTO EXIT POINT', [
-      'Mach Number',
-      'CDU Offset (If applied during EDTO)',
-      'Cruise FL - Review',
-      'FMC Position - Checked',
-      'Fuel Crossfeed Valve',
-      'ETL Entry - after shutdown'
+      { title: 'Mach Number:', items: ['Check'] },
+      { title: 'CDU Offset:', items: ['If applied during EDTO'] },
+      { title: 'Cruise FL:', items: ['Review'] },
+      { title: 'FMC Position:', items: ['Checked'] },
+      { title: 'Fuel Crossfeed Valve:', items: ['Check'] },
+      { title: 'ETL Entry:', items: ['after shutdown'] }
     ], 5);
     
     drawSection('NON-NORMALS', [
-      'Re-Routing',
-      'Diversion Planning',
-      'MEL - APU Fault',
-      'Engine Non-Normal requiring diversion',
-      'Pressurisation Non-Normal requiring diversion',
-      'Navigation Non-Normal',
-      'Weather Contingency',
-      'Non-Comms Contingency',
-      'Other Non-Normal'
+      { title: 'Re-Routing:', items: ['Check'] },
+      { title: 'Diversion Planning:', items: ['Check'] },
+      { title: 'MEL - APU Fault:', items: ['Check'] },
+      { title: 'Engine Non-Normal requiring diversion:', items: ['Check'] },
+      { title: 'Pressurisation Non-Normal requiring diversion:', items: ['Check'] },
+      { title: 'Navigation Non-Normal:', items: ['Check'] },
+      { title: 'Weather Contingency:', items: ['Check'] },
+      { title: 'Non-Comms Contingency:', items: ['Check'] },
+      { title: 'Other Non-Normal:', items: ['Check'] }
     ], 6);
     
     // ═══ TRAINER COMMENTS ═══
-    checkPage(35);
+    checkPage(40);
     y += 3;
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(10);
     doc.text('Trainer Comments', M + 2, y);
     y += 6;
     doc.setDrawColor(0);
-    doc.rect(M, y, CW, 22);
+    doc.rect(M, y, CW, 25);
     if (data.instructorComments) {
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(8);
       const lines = doc.splitTextToSize(data.instructorComments, CW - 6);
-      lines.forEach((line, i) => { if (i < 5) doc.text(line, M + 3, y + 5 + i * 4); });
+      lines.forEach((line, i) => { if (i < 6) doc.text(line, M + 3, y + 5 + i * 3.5); });
     }
-    y += 28;
+    y += 30;
     
     // ═══ SIGNATURES ═══
     checkPage(25);
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(9);
     
-    // Trainer
     doc.text('Trainer Name:', M + 2, y);
     doc.line(M + 28, y + 1, 80, y + 1);
     if (data.trainerName) { doc.setFont('helvetica', 'bold'); doc.text(data.trainerName, M + 29, y); doc.setFont('helvetica', 'normal'); }
@@ -778,7 +805,6 @@
     }
     y += 12;
     
-    // Trainee
     doc.text('Trainee Name:', M + 2, y);
     doc.line(M + 28, y + 1, 80, y + 1);
     if (data.footerTraineeName || data.traineeName) { doc.setFont('helvetica', 'bold'); doc.text(data.footerTraineeName || data.traineeName, M + 29, y); doc.setFont('helvetica', 'normal'); }
@@ -806,15 +832,15 @@
     
     // ═══ PREPARED BY ═══
     checkPage(20);
-    y += 15;  // Move section down 40px from previous content
+    y += 10;
     doc.setFontSize(9);
     doc.text('Signature / Stamp', 30, y);
-    doc.text('Date', 140, y);  // Date label moved left
+    doc.text('Date', 140, y);
     y += 6;
-    doc.line(30, y, 100, y);  // Signature line
-    doc.line(140, y, 180, y);  // Date line
+    doc.line(30, y, 100, y);
+    doc.line(140, y, 180, y);
     if (data.preparedBy) { doc.setFont('helvetica', 'bold'); doc.setFontSize(8); doc.text(data.preparedBy, 30, y + 5); }
-    if (data.preparedDate) { doc.setFont('helvetica', 'bold'); doc.text(data.preparedDate, 160, y - 2); }  // Date value moved right
+    if (data.preparedDate) { doc.setFont('helvetica', 'bold'); doc.text(data.preparedDate, 160, y - 2); }
     
     doc.setFont('helvetica', 'italic');
     doc.setFontSize(7);
