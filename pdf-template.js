@@ -133,27 +133,36 @@ function generatePDFCode() {
     // ═══ DRAW SECTION WITH GROUPS ═══
     // Groups have checkboxes, sub-items don't
     function drawSection(title, groups, secId) {
+      if (!groups || groups.length === 0) return;
       checkPage(10);
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(10);
-      doc.text(title, M + 2, y);
-      y += 6;
+      
+      // Section header (only if different from group title)
+      const isSingleGroup = groups.length === 1 && groups[0].title === title;
+      if (!isSingleGroup) {
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(10);
+        doc.text(title, M + 2, y);
+        y += 6;
+      }
       
       groups.forEach((group, gIdx) => {
         checkPage(8);
         const gKey = 's' + secId + '-g' + gIdx;
         const gStatus = data.checklist ? data.checklist[gKey] : '';
         
-        // Group title (bold)
-        doc.setFont('helvetica', 'bold');
-        doc.setFontSize(8);
-        doc.text(group.title, M + 4, y + 1);
+        // Group title (bold) - only show if not a single group
+        if (!isSingleGroup) {
+          doc.setFont('helvetica', 'bold');
+          doc.setFontSize(8);
+          doc.text(group.title, M + 4, y + 1);
+          y += 5;
+        }
         
-        // Checkboxes for group (no signature lines)
+        // Checkboxes row - at the TOP of the group
         drawCheckbox(COL_CHK, gStatus === 'pass');
         drawCheckbox(COL_REDO, gStatus === 'fail');
         
-        // Draw trainer signature image if available (no placeholder lines)
+        // Draw trainer signature image if available
         if (data.itemSignatures && data.itemSignatures[gKey]) {
           const sigs = data.itemSignatures[gKey];
           if (sigs.trainer && sigs.trainer.startsWith('data:')) {
@@ -161,15 +170,13 @@ function generatePDFCode() {
           }
         }
         
-        y += 6;
-        
         // Sub-items (indented with triangle bullet)
         doc.setFont('helvetica', 'normal');
         doc.setFontSize(7);
         group.items.forEach(item => {
           checkPage(4);
-          const bullet = item.startsWith('  ') ? '\\u25B8 ' : '';  // Triangle bullet
-          doc.text(bullet + item.trim(), M + 6, y + 1);
+          const isSub = item.startsWith('  '); const indent = isSub ? M + 10 : M + 4; const bullet = isSub ? '\\u25CB ' : '\\u25B8 ';  // Triangle bullet
+          doc.text(bullet + item.trim(), indent, y + 1);
           y += 4;
         });
         

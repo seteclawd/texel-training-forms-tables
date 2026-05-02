@@ -34,41 +34,46 @@
       ]}
     ]},
     { id: 3, title: 'PRE-FLIGHT', groups: [
-      { title: 'Aircraft Status:', items: [
-        'Consult MEL - RVSM Requirements',
-        'Consult MEL - EDTO Requirements'
-      ]},
-      { title: 'Fuel Crossfeed Valve:', items: ['i.a.w. FCOM Check'] },
-      { title: 'Aircraft Clocks:', items: ['UTC set'] },
-      { title: 'Flight Plan Route:', items: ['Enter FPL into FMC'] },
-      { title: 'Route Leg Winds:', items: ['Insert winds'] },
-      { title: 'EDTO Tracks and Distances:', items: ['Verified and Checked'] }
+      { title: 'PRE-FLIGHT', items: [
+        'Aircraft Status - Consult MEL',
+        '  - RVSM Requirements',
+        '  - EDTO Requirements',
+        'Fuel Crossfeed Valve - i.a.w. FCOM Fuel Crossfeed Valve Check',
+        'Aircraft Clocks - UTC set',
+        'Flight Plan Route - Enter FPL into FMC',
+        'Route Leg Winds - Insert winds',
+        'EDTO Tracks and Distances - Verified and Checked'
+      ]}
     ]},
     { id: 4, title: 'ENROUTE - PRIOR TO EDTO ENTRY POINT', groups: [
-      { title: 'EDTO Clearance:', items: ['40 Minutes before'] },
-      { title: 'Weather from OCC:', items: ['SATPHONE 30 minutes before'] },
-      { title: 'APU:', items: ['15 minutes before ENTRY point'] },
-      { title: 'EDTO Significant Systems Operation:', items: ['Check'] },
-      { title: 'FMC Position:', items: ['Check'] },
-      { title: 'FMC Route:', items: ['If changed then confirm modification (CPDLC)'] },
-      { title: 'CDU FIX page:', items: ['adequate AD 428nm ARCs'] },
-      { title: 'Flight Level and Mach Number:', items: ['as cleared'] },
-      { title: 'HF and SELCAL:', items: ['Checked'] },
-      { title: 'Radios and Transponder:', items: ['Check'] },
-      { title: 'Approaching Waypoints:', items: ['TRK and DIST'] },
-      { title: 'Passing Each Waypoint:', items: ['Actual Track'] },
-      { title: 'Position Report:', items: ['Check'] },
-      { title: '10 Min after passing waypoint:', items: ['Check'] },
-      { title: 'Midpoint Check:', items: ['winds and times'] },
-      { title: 'ETP CDU FIX page:', items: ['updated'] }
+      { title: 'ENROUTE - PRIOR TO EDTO ENTRY POINT', items: [
+        'EDTO Clearance (40 Minutes before)',
+        'Weather from OCC - SATPHONE 30 minutes before',
+        'APU 15 minutes before ENTRY point',
+        'EDTO Significant Systems Operation',
+        'FMC Position - Check',
+        'FMC Route - If changed then confirm modification (CPDLC)',
+        'CDU FIX page - adequate AD 428nm ARCs',
+        'Flight Level and Mach Number - as cleared',
+        'HF and SELCAL - Checked',
+        'Radios and Transponder',
+        'Approaching Waypoints TRK and DIST',
+        'Passing Each Waypoint Actual Track',
+        'Position Report',
+        '10 Minute after passing waypoint',
+        'Midpoint Check winds and times',
+        'ETP CDU FIX page - updated'
+      ]}
     ]},
     { id: 5, title: 'ENROUTE - AFTER EDTO EXIT POINT', groups: [
-      { title: 'Mach Number:', items: ['Check'] },
-      { title: 'CDU Offset:', items: ['If applied during EDTO'] },
-      { title: 'Cruise FL:', items: ['Review'] },
-      { title: 'FMC Position:', items: ['Checked'] },
-      { title: 'Fuel Crossfeed Valve:', items: ['Check'] },
-      { title: 'ETL Entry:', items: ['after shutdown'] }
+      { title: 'ENROUTE - AFTER EDTO EXIT POINT', items: [
+        'Mach Number',
+        'CDU Offset (If applied during EDTO)',
+        'Cruise FL - Review',
+        'FMC Position - Checked',
+        'Fuel Crossfeed Valve',
+        'ETL Entry - after shutdown'
+      ]}
     ]},
     { id: 6, title: 'NON-NORMALS', groups: [
       { title: 'Re-Routing:', items: ['Check'] },
@@ -635,27 +640,36 @@
     // ═══ DRAW SECTION WITH GROUPS ═══
     // Groups have checkboxes, sub-items don't
     function drawSection(title, groups, secId) {
+      if (!groups || groups.length === 0) return;
       checkPage(10);
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(10);
-      doc.text(title, M + 2, y);
-      y += 6;
+      
+      // Section header (only if different from group title)
+      const isSingleGroup = groups.length === 1 && groups[0].title === title;
+      if (!isSingleGroup) {
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(10);
+        doc.text(title, M + 2, y);
+        y += 6;
+      }
       
       groups.forEach((group, gIdx) => {
         checkPage(8);
         const gKey = 's' + secId + '-g' + gIdx;
         const gStatus = data.checklist ? data.checklist[gKey] : '';
         
-        // Group title (bold)
-        doc.setFont('helvetica', 'bold');
-        doc.setFontSize(8);
-        doc.text(group.title, M + 4, y + 1);
+        // Group title (bold) - only show if not a single group
+        if (!isSingleGroup) {
+          doc.setFont('helvetica', 'bold');
+          doc.setFontSize(8);
+          doc.text(group.title, M + 4, y + 1);
+          y += 5;
+        }
         
-        // Checkboxes for group (no signature lines)
+        // Checkboxes row - at the TOP of the group
         drawCheckbox(COL_CHK, gStatus === 'pass');
         drawCheckbox(COL_REDO, gStatus === 'fail');
         
-        // Draw trainer signature image if available (no placeholder lines)
+        // Draw trainer signature image if available
         if (data.itemSignatures && data.itemSignatures[gKey]) {
           const sigs = data.itemSignatures[gKey];
           if (sigs.trainer && sigs.trainer.startsWith('data:')) {
@@ -663,15 +677,13 @@
           }
         }
         
-        y += 6;
-        
         // Sub-items (indented with triangle bullet)
         doc.setFont('helvetica', 'normal');
         doc.setFontSize(7);
         group.items.forEach(item => {
           checkPage(4);
-          const bullet = item.startsWith('  ') ? '\u25B8 ' : '';  // Triangle bullet
-          doc.text(bullet + item.trim(), M + 6, y + 1);
+          const isSub = item.startsWith('  '); const indent = isSub ? M + 10 : M + 4; const bullet = isSub ? '\u25CB ' : '\u25B8 ';  // Triangle bullet
+          doc.text(bullet + item.trim(), indent, y + 1);
           y += 4;
         });
         
