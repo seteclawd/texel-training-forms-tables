@@ -782,6 +782,7 @@
     checkPage(30);
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(10);
+    if (data.preparedBy) { doc.setFont('helvetica', 'normal'); doc.setFontSize(8); doc.text(data.preparedBy, M + 2, y); }
     doc.text('General Comments or Recommendations', 105, y, { align: 'center' });
     y += 6;
     doc.setDrawColor(0);
