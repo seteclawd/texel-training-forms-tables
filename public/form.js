@@ -822,7 +822,7 @@
   // ── Preview & Submit ───────────────────────────────────────────────
   let currentPDFData = null;
 
-  window.previewPDF = async function() {
+  window.previewPDF = async function() { console.log("previewPDF called");
     const data = collectFormData(true);
     const err = validate(data);
     const valMsg = document.getElementById('validationMsg');
@@ -839,9 +839,9 @@
 
     try {
       if (!window.jspdf) {
-        await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js');
+        await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js'); console.log('jsPDF loaded:', typeof window.jspdf);
       }
-      const pdfBase64 = await generatePDF(data);
+      const pdfBase64 = await generatePDF(data); console.log("PDF generated, length:", (pdfBase64||"").length);
       currentPDFData = { ...data, pdfBase64 };
 
       // Show preview
@@ -861,7 +861,7 @@
       }
     } catch (e) {
       console.error('PDF generation failed:', e);
-      alert('PDF generation failed: ' + e.message + '. Please try again.');
+      alert('PDF error: ' + e.message + ' | Stack: ' + (e.stack || '').substring(0, 200));
     } finally {
       btn.disabled = false;
       btn.textContent = 'Preview PDF';
