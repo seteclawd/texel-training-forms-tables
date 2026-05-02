@@ -820,7 +820,7 @@
     doc.text('Page 2 of 2', 105, PAGE_H - 5, { align: 'center' });
     
     return doc.output('datauristring');
-  }}
+  }
 
   // ── Preview & Submit ───────────────────────────────────────────────
   let currentPDFData = null;
