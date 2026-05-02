@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#0a1929">
+  <title>Texel Training Forms</title>
+  <link rel="manifest" href="/manifest.json">
+  <link rel="apple-touch-icon" href="/icon-192.png">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #0a1929;
+      color: #e0e6ed;
+      min-height: 100vh;
+      padding: 20px;
+    }
+    .header {
+      text-align: center;
+      padding: 30px 0;
+      border-bottom: 1px solid #1e3a5f;
+      margin-bottom: 30px;
+    }
+    .header h1 { font-size: 1.6rem; color: #4fc3f7; margin-bottom: 8px; }
+    .header p { color: #90a4ae; font-size: 0.9rem; }
+    .logo {
+      width: 80px;
+      height: 80px;
+      background: linear-gradient(135deg, #1e3a5f, #0d2137);
+      border-radius: 16px;
+      margin: 0 auto 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+    }
+    .forms-grid {
+      display: grid;
+      gap: 16px;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    .form-card {
+      background: linear-gradient(135deg, #132f4c, #0d2137);
+      border: 1px solid #1e3a5f;
+      border-radius: 12px;
+      padding: 24px;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-decoration: none;
+      color: inherit;
+      display: block;
+    }
+    .form-card:hover, .form-card:active {
+      border-color: #4fc3f7;
+      transform: translateY(-2px);
+    }
+    .form-card .title {
+      font-size: 1.1rem;
+      color: #4fc3f7;
+      margin-bottom: 6px;
+    }
+    .form-card .code {
+      font-size: 0.8rem;
+      color: #90a4ae;
+    }
+    .form-card .desc {
+      font-size: 0.85rem;
+      color: #b0bec5;
+      margin-top: 8px;
+    }
+    .offline-badge {
+      display: inline-block;
+      background: #ff9800;
+      color: #000;
+      font-size: 0.7rem;
+      padding: 2px 8px;
+      border-radius: 10px;
+      margin-top: 10px;
+    }
+    .offline-badge.hidden { display: none; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="logo">✈️</div>
+    <h1>Texel Training Forms</h1>
+    <p>Digital training records for Texel Air</p>
+    <span id="offlineBadge" class="offline-badge hidden">Offline Mode</span>
+  </div>
+
+  <div class="forms-grid">
+    <a href="/form.html" class="form-card">
+      <div class="title">EDTO/ETOPS Training Form</div>
+      <div class="code">TA-TD-20 Rev 04</div>
+      <div class="desc">Extended Diversion Time Operations / Extended-range Twin-engine Operational Performance Standards training assessment.</div>
+    </a>
+  </div>
+
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js');
+    }
+    function updateOnlineStatus() {
+      const badge = document.getElementById('offlineBadge');
+      if (!navigator.onLine) badge.classList.remove('hidden');
+      else badge.classList.add('hidden');
+    }
+    window.addEventListener('online', updateOnlineStatus);
+    window.addEventListener('offline', updateOnlineStatus);
+    updateOnlineStatus();
+  </script>
+</body>
+</html>

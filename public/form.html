@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#0a1929">
+  <title>EDTO Training Form - TA-TD-20</title>
+  <link rel="manifest" href="/manifest.json">
+  <style>
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #0a1929;
+      color: #e0e6ed;
+      margin: 0;
+      padding: 0;
+      font-size: 15px;
+      line-height: 1.5;
+    }
+    .container { max-width: 900px; margin: 0 auto; padding: 16px; }
+    .header {
+      text-align: center;
+      padding: 20px 0;
+      border-bottom: 2px solid #1e3a5f;
+      margin-bottom: 20px;
+    }
+    .header h1 { font-size: 1.3rem; color: #4fc3f7; margin-bottom: 4px; }
+    .header .meta { color: #90a4ae; font-size: 0.85rem; }
+    .draft-indicator {
+      position: fixed;
+      top: 8px;
+      right: 8px;
+      background: #2e7d32;
+      color: #fff;
+      font-size: 0.75rem;
+      padding: 4px 10px;
+      border-radius: 12px;
+      opacity: 0;
+      transition: opacity 0.3s;
+      z-index: 100;
+    }
+    .draft-indicator.visible { opacity: 1; }
+
+    .section { background: #132f4c; border: 1px solid #1e3a5f; border-radius: 10px; margin-bottom: 16px; overflow: hidden; }
+    .section-header {
+      background: linear-gradient(135deg, #1e3a5f, #132f4c);
+      padding: 14px 16px;
+      font-weight: 600;
+      font-size: 1rem;
+      color: #4fc3f7;
+      border-bottom: 1px solid #1e3a5f;
+    }
+    .section-body { padding: 12px; }
+
+    .form-row { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 12px; }
+    .form-group { flex: 1 1 200px; min-width: 200px; }
+    .form-group label { display: block; font-size: 0.85rem; color: #90a4ae; margin-bottom: 4px; font-weight: 500; }
+    .form-group input, .form-group select, .form-group textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #1e3a5f;
+      border-radius: 8px;
+      background: #0d2137;
+      color: #e0e6ed;
+      font-size: 1rem;
+      -webkit-appearance: none;
+    }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+      outline: none;
+      border-color: #4fc3f7;
+    }
+    .form-group textarea { min-height: 80px; resize: vertical; }
+
+    .checklist-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 10px;
+      border-bottom: 1px solid #1a3a5f;
+      gap: 10px;
+    }
+    .checklist-item:last-child { border-bottom: none; }
+    .checklist-text { flex: 1; font-size: 0.9rem; }
+    .group-items { padding: 4px 0 4px 16px; background: rgba(0,0,0,0.15); }
+    .sub-item { font-size: 0.8rem; color: #90caf9; padding: 2px 0; }
+    .checklist-actions { display: flex; gap: 6px; flex-shrink: 0; }
+    .btn-check {
+      padding: 8px 14px;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+      white-space: nowrap;
+    }
+    .btn-check.pass {
+      background: #1b5e20;
+      color: #a5d6a7;
+    }
+    .btn-check.pass.active {
+      background: #2e7d32;
+      color: #fff;
+      box-shadow: 0 0 0 2px #4caf50;
+    }
+    .btn-check.fail {
+      background: #5c1a1a;
+      color: #ef9a9a;
+    }
+    .btn-check.fail.active {
+      background: #c62828;
+      color: #fff;
+      box-shadow: 0 0 0 2px #f44336;
+    }
+    .btn-check:active { transform: scale(0.96); }
+
+    .signature-pad {
+      background: #fff;
+      border-radius: 8px;
+      border: 2px solid #1e3a5f;
+      cursor: crosshair;
+      touch-action: none;
+      display: block;
+      width: 100%;
+      max-width: 400px;
+      height: 150px;
+    }
+    .signature-wrap { margin-bottom: 16px; }
+    .signature-wrap label { display: block; font-size: 0.85rem; color: #90a4ae; margin-bottom: 4px; }
+    .btn-clear {
+      background: #1e3a5f;
+      color: #90a4ae;
+      border: none;
+      padding: 6px 14px;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      cursor: pointer;
+      margin-top: 6px;
+    }
+    .btn-clear:active { background: #2a4a6f; }
+
+    .footer-section {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      padding: 16px;
+    }
+    @media (max-width: 600px) {
+      .footer-section { grid-template-columns: 1fr; }
+    }
+
+    .submit-bar {
+      position: sticky;
+      bottom: 0;
+      background: #0a1929;
+      border-top: 2px solid #1e3a5f;
+      padding: 16px;
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      z-index: 50;
+    }
+    .btn-submit {
+      background: linear-gradient(135deg, #1565c0, #0d47a1);
+      color: #fff;
+      border: none;
+      padding: 14px 36px;
+      border-radius: 10px;
+      font-size: 1.05rem;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(13,71,161,0.3);
+    }
+    .btn-submit:active { transform: translateY(2px); }
+    .btn-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-draft {
+      background: #1e3a5f;
+      color: #90a4ae;
+      border: none;
+      padding: 14px 24px;
+      border-radius: 10px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    .btn-draft.saving {
+      background: #22c55e;
+      color: #fff;
+      transform: scale(1.05);
+      box-shadow: 0 0 20px rgba(34,197,94,0.5);
+    }
+    @keyframes savePulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.08); }
+      100% { transform: scale(1.05); }
+    }
+
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.8);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 200;
+      padding: 20px;
+    }
+    .modal-overlay.visible { display: flex; }
+    .modal {
+      background: #132f4c;
+      border-radius: 16px;
+      padding: 32px;
+      text-align: center;
+      max-width: 400px;
+      width: 100%;
+      border: 1px solid #1e3a5f;
+    }
+    .modal h2 { color: #4fc3f7; margin-bottom: 12px; }
+    .modal p { color: #b0bec5; margin-bottom: 20px; }
+    .modal .btn-close {
+      background: #1e3a5f;
+      color: #e0e6ed;
+      border: none;
+      padding: 10px 24px;
+      border-radius: 8px;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+
+    .validation-msg {
+      color: #f44336;
+      font-size: 0.85rem;
+      text-align: center;
+      padding: 8px;
+      display: none;
+    }
+    .validation-msg.visible { display: block; }
+
+    .section-progress {
+      font-size: 0.75rem;
+      color: #90a4ae;
+      float: right;
+    }
+
+    /* Per-item signatures */
+    .item-sigs {
+      display: none;
+      flex-direction: column;
+      gap: 10px;
+      padding: 10px 10px 14px;
+      border-top: 1px solid #1a3a5f;
+      background: #0d2137;
+    }
+    .item-sigs.visible { display: flex; }
+    .sig-pair {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .sig-mini-wrap {
+      flex: 1 1 200px;
+    }
+    .sig-mini-wrap label {
+      display: block;
+      font-size: 0.75rem;
+      color: #90a4ae;
+      margin-bottom: 4px;
+    }
+    .sig-mini {
+      background: #fff;
+      border-radius: 6px;
+      border: 2px solid #1e3a5f;
+      cursor: crosshair;
+      touch-action: none;
+      display: block;
+      width: 100%;
+      max-width: 200px;
+      height: 60px;
+    }
+    .btn-clear-mini {
+      background: #1e3a5f;
+      color: #90a4ae;
+      border: none;
+      padding: 4px 10px;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      cursor: pointer;
+      margin-top: 4px;
+    }
+    .btn-toggle-sigs {
+      background: #0d47a1;
+      color: #e0e6ed;
+      border: none;
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      cursor: pointer;
+      margin-left: 8px;
+    }
+    .btn-toggle-sigs.active {
+      background: #1565c0;
+      box-shadow: 0 0 0 2px #4fc3f7;
+    }
+
+    /* Preview modal */
+    .preview-modal {
+      background: #132f4c;
+      border-radius: 16px;
+      padding: 20px;
+      max-width: 900px;
+      width: 100%;
+      height: 90vh;
+      border: 1px solid #1e3a5f;
+      display: flex;
+      flex-direction: column;
+    }
+    .preview-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .preview-header h2 { color: #4fc3f7; margin: 0; font-size: 1.1rem; }
+    .preview-iframe {
+      flex: 1;
+      border: 1px solid #1e3a5f;
+      border-radius: 8px;
+      background: #fff;
+      width: 100%;
+      min-height: 500px;
+    }
+    .preview-actions {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      margin-top: 16px;
+    }
+    .btn-send {
+      background: linear-gradient(135deg, #1565c0, #0d47a1);
+      color: #fff;
+      border: none;
+      padding: 12px 32px;
+      border-radius: 10px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .btn-cancel {
+      background: #1e3a5f;
+      color: #90a4ae;
+      border: none;
+      padding: 12px 32px;
+      border-radius: 10px;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div class="draft-indicator" id="draftIndicator">Draft saved</div>
+
+  <div class="container">
+    <div class="header">
+      <h1>B737 – EDTO/ETOPS TRAINING FORM</h1>
+      <div class="meta">Form: TA-TD-20 | Revision: 04 | Date: 11-12-2025</div>
+    </div>
+
+    <!-- Header Fields -->
+    <div class="section">
+      <div class="section-header">Trainee and Simulator Details</div>
+      <div class="section-body">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Trainee Name</label>
+            <select id="traineeName" onchange="onTraineeChange()">
+              <option value="">Select crew member...</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Rank</label>
+            <input type="text" id="traineeRank" readonly placeholder="Auto-filled">
+          </div>
+          <div class="form-group">
+            <label>Licence No.</label>
+            <input type="text" id="licenceNo" placeholder="Licence number">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Sim Registration</label>
+            <input type="text" id="simRegistration" placeholder="e.g. A9C-TXA">
+          </div>
+          <div class="form-group">
+            <label>Type of session</label>
+            <select id="sessionType">
+              <option value="">Select...</option>
+              <option value="Initial">Initial</option>
+              <option value="Recurrent">Recurrent</option>
+              <option value="EDTO TRI/TRE">EDTO TRI/TRE</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Date</label>
+            <input type="date" id="formDate">
+          </div>
+          <div class="form-group">
+            <label>EDTO Validity Expiry</label>
+            <input type="date" id="edtoExpiry">
+          </div>
+          <div class="form-group">
+            <label>Location</label>
+            <input type="text" id="location" placeholder="e.g. Bahrain">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 1 -->
+    <div class="section">
+      <div class="section-header">
+        1. FLIGHT PREPARATION BRIEFING
+        <span class="section-progress" id="progress-1">0/2</span>
+      </div>
+      <div class="section-body" id="section-1"></div>
+    </div>
+
+    <!-- Section 3 -->
+    <div class="section">
+      <div class="section-header">
+        2. PRE-FLIGHT
+        <span class="section-progress" id="progress-3">0/6</span>
+      </div>
+      <div class="section-body" id="section-3"></div>
+    </div>
+
+    <!-- Section 4 -->
+    <div class="section">
+      <div class="section-header">
+        3. ENROUTE – PRIOR TO EDTO ENTRY POINT
+        <span class="section-progress" id="progress-4">0/16</span>
+      </div>
+      <div class="section-body" id="section-4"></div>
+    </div>
+
+    <!-- Section 5 -->
+    <div class="section">
+      <div class="section-header">
+        4. ENROUTE – AFTER EDTO EXIT POINT
+        <span class="section-progress" id="progress-5">0/6</span>
+      </div>
+      <div class="section-body" id="section-5"></div>
+    </div>
+
+    <!-- Section 6 -->
+    <div class="section">
+      <div class="section-header">
+        5. NON-NORMALS
+        <span class="section-progress" id="progress-6">0/9</span>
+      </div>
+      <div class="section-body" id="section-6"></div>
+    </div>
+
+    <!-- Footer -->
+    <div class="section">
+      <div class="section-header">Signatures & Comments</div>
+      <div class="section-body footer-section">
+        <div>
+          <div class="form-group">
+            <label>Trainer</label>
+            <select id="trainerName" onchange="onTrainerChange()"><option value="">Select trainer...</option></select>
+          </div>
+          <div class="signature-wrap">
+            <label>Trainer Signature</label>
+            <canvas id="trainerSig" class="signature-pad" width="400" height="150"></canvas>
+            <button class="btn-clear" onclick="clearSig('trainerSig')">Clear</button>
+          </div>
+        </div>
+        <div>
+          <div class="form-group">
+            <label>Trainee Name</label>
+            <input type="text" id="footerTraineeName" placeholder="Auto-filled" readonly>
+          </div>
+          <div class="signature-wrap">
+            <label>Trainee Signature</label>
+            <canvas id="traineeSig" class="signature-pad" width="400" height="150"></canvas>
+            <button class="btn-clear" onclick="clearSig('traineeSig')">Clear</button>
+          </div>
+        </div>
+      </div>
+      <div class="section-body">
+        <div class="form-group">
+          <label>Instructor Comments</label>
+          <textarea id="instructorComments" placeholder="Enter instructor comments..."></textarea>
+        </div>
+        <div class="form-group" style="margin-top: 12px;">
+          <label>General Comments or Recommendations</label>
+          <textarea id="generalComments" placeholder="Enter any general comments..."></textarea>
+        </div>
+        <div class="form-row" style="margin-top: 12px;">
+          <div class="form-group" style="max-width: 300px;">
+            <label>Prepared by</label>
+            <select id="preparedBy">
+              <option value="">Select...</option>
+              <option value="Director of Operations">Director of Operations</option>
+              <option value="Training Manager">Training Manager</option>
+            </select>
+          </div>
+          <div class="form-group" style="max-width: 200px;">
+            <label>Date</label>
+            <input type="date" id="preparedDate">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="validation-msg" id="validationMsg">Please fill all required fields.</div>
+
+  <div class="submit-bar">
+    <button class="btn-draft" onclick="saveDraft()">Save Draft</button>
+    <button class="btn-submit" id="submitBtn" onclick="previewPDF()">Preview PDF</button>
+  </div>
+
+  <!-- Success Modal -->
+  <div class="modal-overlay" id="successModal">
+    <div class="modal">
+      <h2>✅ Form Submitted</h2>
+      <p>The EDTO training form has been submitted successfully and emailed to Luis Rivas.</p>
+      <button class="btn-close" onclick="closeModal()">Close</button>
+    </div>
+  </div>
+
+  <!-- PDF Preview Modal -->
+  <div class="modal-overlay" id="previewModal" style="align-items: stretch; justify-content: center;">
+    <div class="preview-modal">
+      <div class="preview-header">
+        <h2>📄 PDF Preview</h2>
+        <button class="btn-close" onclick="closePreview()">✕</button>
+      </div>
+      <div id="previewContainer" class="preview-iframe"></div>
+      <div class="preview-actions">
+        <button class="btn-cancel" onclick="closePreview()">Cancel</button>
+        <button class="btn-send" id="sendBtn" onclick="sendForm()">Submit</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/form.js"></script>
+</body>
+</html>
