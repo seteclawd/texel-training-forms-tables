@@ -634,6 +634,12 @@
     
     y = 72;
     
+    // Footer page 1
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(7);
+    doc.text('TA-TD-20', M + 2, PAGE_H - 5);
+    doc.text(data.footerTraineeName || data.traineeName || '', 105, PAGE_H - 5, { align: 'center' });
+    
     // ═══ COLUMN HEADERS ═══
     doc.setFillColor(200, 220, 240);
     doc.rect(M, y - 4, CW, 10, 'F');
@@ -664,7 +670,7 @@
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(10);
       doc.text(title, M + 2, y);
-      y += 6;
+      y += 4;
       
       groups.forEach((group, gIdx) => {
         checkPage(8);
@@ -675,8 +681,8 @@
         doc.setFontSize(8);
         doc.text((group.num ? group.num + ' ' : '') + group.title, M + 4, y + 1);
         
-        drawCheckbox(COL_CHK, gStatus === 'pass');
-        drawCheckbox(COL_REDO, gStatus === 'fail');
+        drawCheckbox(COL_CHK - 1, gStatus === "pass");
+        drawCheckbox(COL_REDO - 1, gStatus === "fail");
         
         if (gStatus && (data.trainerSignature || data.trainerCode)) {
           if (data.trainerSignature && data.trainerSignature.startsWith('data:')) {
@@ -774,21 +780,7 @@
         doc.setFont('helvetica', 'normal');
         doc.setFontSize(8);
         doc.text(item.n + '. ' + item.t, M + 4, y + 1);
-        
-        drawCheckbox(COL_CHK, iStatus === 'pass');
-        drawCheckbox(COL_REDO, iStatus === 'fail');
-        
-        if (iStatus && (data.trainerSignature || data.trainerCode)) {
-          if (data.trainerSignature && data.trainerSignature.startsWith('data:')) {
-            try { doc.addImage(data.trainerSignature, 'PNG', COL_SIG, y - 4, 16, 7); } catch(e) {}
-          }
-          if (data.trainerCode) {
-            doc.setFont('helvetica', 'bold');
-            doc.setFontSize(7);
-            doc.text(data.trainerCode, COL_3LC, y);
-          }
-        }
-        y += 4;
+        y += 6;
       });
       
       // Section separator line
@@ -896,19 +888,22 @@
     checkPage(40);
     doc.text('Trainer Name:', M + 2, y);
     doc.line(M + 29, y + 1, 80, y + 1);
-    if (data.trainerName) { doc.setFont('helvetica', 'bold'); doc.text(data.trainerName, M + 29, y); doc.setFont('helvetica', 'normal'); }
-    doc.text('Trainer Signature:', 85, y);
+    if (data.trainerName) { doc.setFont('helvetica', 'normal'); doc.text(data.trainerName, M + 29, y); }
+    doc.text('Trainer Name:', M + 2, y);
+    doc.line(M + 29, y + 1, 80, y + 1);
+    if (data.trainerName) { doc.setFont('helvetica', 'normal'); doc.text(data.trainerName, M + 29, y); }
+    doc.text('Trainer Signature:', 120, y);
     if (data.trainerSignature && data.trainerSignature.startsWith('data:')) {
-      try { doc.addImage(data.trainerSignature, 'PNG', 110, y - 6, 45, 10); } catch(e) {}
+      try { doc.addImage(data.trainerSignature, 'PNG', 145, y - 6, 45, 10); } catch(e) {}
     }
     y += 12;
     
     doc.text('Trainee Name:', M + 2, y);
     doc.line(M + 28, y + 1, 80, y + 1);
-    if (data.footerTraineeName || data.traineeName) { doc.setFont('helvetica', 'bold'); doc.text(data.footerTraineeName || data.traineeName, M + 29, y); doc.setFont('helvetica', 'normal'); }
-    doc.text('Trainee Signature:', 120, y);
+    if (data.footerTraineeName || data.traineeName) { doc.setFont('helvetica', 'normal'); doc.text(data.footerTraineeName || data.traineeName, M + 29, y); }
+    doc.text('Trainee Signature:', 125, y);
     if (data.traineeSignature && data.traineeSignature.startsWith('data:')) {
-      try { doc.addImage(data.traineeSignature, 'PNG', 145, y - 6, 45, 10); } catch(e) {}
+      try { doc.addImage(data.traineeSignature, 'PNG', 150, y - 6, 45, 10); } catch(e) {}
     }
     y += 15;
     
@@ -916,8 +911,9 @@
     checkPage(30);
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(10);
-    if (data.preparedBy) { doc.text(data.preparedBy, M + 152, y); }
-    doc.text('General Comments or Recommendations', M + 152, y + 5);
+    if (data.preparedBy) { doc.setFont('helvetica', 'bold'); doc.text(data.preparedBy, M + 2, y); }
+    doc.text('General Comments or Recommendations', M + 2, y);
+    y += 5;
     y += 11;
     doc.setDrawColor(0);
     doc.rect(M, y, CW, 20);
