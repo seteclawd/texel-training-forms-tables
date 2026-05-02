@@ -23,51 +23,36 @@ function generatePDFCode() {
       return dd + '/' + mmm + '/' + yyyy;
     }
     
-    // Column positions - checkboxes centered per group
-    const COL_TEXT = 110;     // Text column ends
-    const COL_CHK = 113;      // Satisfactorily Completed
-    const COL_REDO = 138;     // Incomplete or Redo
-    const COL_SIG = 163;      // Trainer Signature
-    const COL_3LC = 182;      // Trainer Texel 3LC
-    const BOX = 5;            // Checkbox size (bigger for groups)
+    // Column positions
+    const COL_TEXT = 110;
+    const COL_CHK = 113;
+    const COL_REDO = 138;
+    const COL_SIG = 163;
+    const COL_3LC = 182;
+    const BOX = 5;
     
     function checkPage(needed) {
       if (y > PAGE_H - (needed || 25)) {
         doc.addPage();
-        y = 22;
-        doc.setFontSize(8);
-        doc.setFont('helvetica', 'normal');
-        doc.text('Form:TA-TD-20', M, 10);
-        doc.setFontSize(10);
-        doc.setFont('helvetica', 'bold');
-        doc.text('B737 - EDTO/ETOPS TRAINING FORM', 105, 10, { align: 'center' });
-        doc.setFontSize(8);
-        doc.setFont('helvetica', 'normal');
-        doc.text('Revision: 04', PAGE_W - M - 20, 10);
-        doc.text('Date: 11-12-2025', PAGE_W - M - 20, 14);
-        return true;
+        y = 15;
       }
-      return false;
     }
     
     function drawCheckbox(x, checked) {
-      doc.rect(x, y - 3, BOX, BOX);
+      doc.rect(x, y - 2, BOX, BOX);
       if (checked) {
-        doc.setFontSize(12);
-        doc.setFont('helvetica', 'bold');
-        doc.text('X', x + 1, y + 0.5);
+        doc.setFont('zapfdingbats');
+        doc.setFontSize(8);
+        doc.text('8', x + 0.5, y + 1.5);
+        doc.setFont('helvetica');
+        doc.setFontSize(8);
       }
     }
     
-    // ═══ PAGE 1 HEADER ═══
-    doc.setFontSize(8);
-    doc.setFont('helvetica', 'normal');
-    doc.text('Form:TA-TD-20', M, 10);
-    doc.setFontSize(12);
+    // ═══ HEADER ═══
     doc.setFont('helvetica', 'bold');
-    doc.text('B737 - EDTO/ETOPS', 105, 9, { align: 'center' });
-    doc.setFontSize(10);
-    doc.text('TRAINING FORM', 105, 14, { align: 'center' });
+    doc.setFontSize(14);
+    doc.text('B737 – EDTO/ETOPS TRAINING FORM', 105, 12, { align: 'center' });
     doc.setFontSize(8);
     doc.setFont('helvetica', 'normal');
     doc.text('Revision: 04', PAGE_W - M - 20, 10);
@@ -100,10 +85,8 @@ function generatePDFCode() {
     ry += 7;
     doc.text('Type of session:', M + 2, ry);
     if (data.sessionType) { doc.setFont('helvetica', 'bold'); doc.text(data.sessionType, M + 33, ry); doc.setFont('helvetica', 'normal'); }
-    // Simulator checkbox
     doc.text('[ ] Simulator', 65, ry);
     if (data.sessionType === 'Simulator') { doc.setFont('helvetica', 'bold'); doc.text('[X]', 65, ry); doc.setFont('helvetica', 'normal'); }
-    // Aircraft checkbox
     doc.text('[ ] Aircraft', 100, ry);
     if (data.sessionType === 'Aircraft') { doc.setFont('helvetica', 'bold'); doc.text('[X]', 100, ry); doc.setFont('helvetica', 'normal'); }
     doc.text('Date:', 140, ry);
@@ -119,7 +102,7 @@ function generatePDFCode() {
     doc.line(130, ry + 1, PAGE_W - M - 2, ry + 1);
     if (data.simRegistration) { doc.setFont('helvetica', 'bold'); doc.text(data.simRegistration, 131, ry); doc.setFont('helvetica', 'normal'); }
     
-    // Row 4: EDTO Validity Expiry (moved 100px left, 15px gap)
+    // Row 4: EDTO Validity Expiry
     ry += 7;
     doc.text('EDTO Validity Expiry:', M + 2, ry);
     doc.line(M + 47, ry + 1, 100, ry + 1);
@@ -149,7 +132,7 @@ function generatePDFCode() {
     doc.text('Texel 3LC', COL_3LC, y + 3);
     y += 8;
     
-    // ═══ DRAW SECTION WITH GROUPS (each group has its own checkboxes) ═══
+    // ═══ DRAW SECTION WITH GROUPS (FLIGHT PREP) ═══
     function drawSection(title, groups, secId) {
       if (!groups || groups.length === 0) return;
       checkPage(10);
@@ -166,20 +149,14 @@ function generatePDFCode() {
         
         doc.setFont('helvetica', 'bold');
         doc.setFontSize(8);
-        doc.text(group.title, M + 4, y + 1);
+        doc.text((group.num ? group.num + ' ' : '') + group.title, M + 4, y + 1);
         
         drawCheckbox(COL_CHK, gStatus === 'pass');
         drawCheckbox(COL_REDO, gStatus === 'fail');
         
-        // NON-NORMALS (secId=6): only show sig/3LC on fail; others: always
-        const isNonNormal = secId === 6;
-        const showSigs = !isNonNormal || gStatus;
-        
-        if (showSigs && (data.trainerSignature || data.trainerCode)) {
+        if (gStatus && (data.trainerSignature || data.trainerCode)) {
           if (data.trainerSignature && data.trainerSignature.startsWith('data:')) {
-            try {
-              doc.addImage(data.trainerSignature, 'PNG', COL_SIG, y - 4, 16, 7);
-            } catch(e) {}
+            try { doc.addImage(data.trainerSignature, 'PNG', COL_SIG, y - 4, 16, 7); } catch(e) {}
           }
           if (data.trainerCode) {
             doc.setFont('helvetica', 'bold');
@@ -187,132 +164,185 @@ function generatePDFCode() {
             doc.text(data.trainerCode, COL_3LC, y);
           }
         }
-        
         y += 5;
-        
         doc.setFont('helvetica', 'normal');
         doc.setFontSize(7);
-        group.items.forEach(item => {
-          checkPage(4);
-          const isSub = item.startsWith('  ');
-          const indent = isSub ? M + 10 : M + 4;
-          doc.text('\\u25B8 ' + item.trim(), indent, y + 1);
-          y += 4;
-        });
         
+        if (group.items && group.items[0] && typeof group.items[0] === 'object') {
+          group.items.forEach(item => {
+            checkPage(3);
+            doc.text(item.n + ' ' + item.t, M + 8, y + 1);
+            y += 3.5;
+          });
+        } else {
+          group.items.forEach(item => {
+            checkPage(3);
+            doc.text('▸ ' + (typeof item === 'string' ? item : item.t || ''), M + 8, y + 1);
+            y += 3.5;
+          });
+        }
         y += 2;
       });
     }
     
-    // ═══ FLAT SECTION (ONE checkbox pair for entire section) ═══
+    // ═══ FLAT SECTION (ONE checkbox for entire section) ═══
     function drawFlatSection(title, items, secId) {
       if (!items || items.length === 0) return;
       checkPage(15);
       
-      const sKey = 's' + secId;
+      const sKey = 's' + secId + '-all';
       const sStatus = data.checklist ? data.checklist[sKey] : '';
       
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(10);
       doc.text(title, M + 2, y);
+      y += 6;
       
       drawCheckbox(COL_CHK, sStatus === 'pass');
       drawCheckbox(COL_REDO, sStatus === 'fail');
       
-      y += 6;
+      if (sStatus && (data.trainerSignature || data.trainerCode)) {
+        if (data.trainerSignature && data.trainerSignature.startsWith('data:')) {
+          try { doc.addImage(data.trainerSignature, 'PNG', COL_SIG, y - 4, 16, 7); } catch(e) {}
+        }
+        if (data.trainerCode) {
+          doc.setFont('helvetica', 'bold');
+          doc.setFontSize(7);
+          doc.text(data.trainerCode, COL_3LC, y);
+        }
+      }
+      y += 5;
       
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(7);
-      items.forEach(item => {
-        checkPage(4);
-        const isSubSub = item.startsWith('    ');
-        const isSub = !isSubSub && item.startsWith('  ');
-        const indent = isSubSub ? M + 14 : (isSub ? M + 10 : M + 4);
-        const bullet = isSubSub ? '\\u25CB ' : '\\u25B8 ';
-        doc.text(bullet + item.trim(), indent, y + 1);
-        y += 4;
-      });
       
-      y += 3;
+      function drawItem(item, depth) {
+        checkPage(3);
+        const indent = M + 4 + (depth * 8);
+        const num = item.n ? item.n + ' ' : '';
+        const text = item.t || item;
+        doc.text(num + text, indent, y + 1);
+        y += 3.5;
+        if (item.sub) {
+          item.sub.forEach(sub => drawItem(sub, depth + 1));
+        }
+      }
+      items.forEach(item => drawItem(item, 0));
+      y += 2;
     }
     
-    // ═══ ALL SECTIONS ═══
+    // ═══ DRAW CHECKBOX PER ITEM (NON-NORMALS) ═══
+    function drawSectionWithItemChecks(title, items, secId) {
+      if (!items || items.length === 0) return;
+      checkPage(10);
+      
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(10);
+      doc.text(title, M + 2, y);
+      y += 6;
+      
+      items.forEach((item, iIdx) => {
+        checkPage(6);
+        const iKey = 's' + secId + '-i' + iIdx;
+        const iStatus = data.checklist ? data.checklist[iKey] : '';
+        
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(8);
+        doc.text(item.n + '. ' + item.t, M + 4, y + 1);
+        
+        drawCheckbox(COL_CHK, iStatus === 'pass');
+        drawCheckbox(COL_REDO, iStatus === 'fail');
+        
+        if (iStatus && (data.trainerSignature || data.trainerCode)) {
+          if (data.trainerSignature && data.trainerSignature.startsWith('data:')) {
+            try { doc.addImage(data.trainerSignature, 'PNG', COL_SIG, y - 4, 16, 7); } catch(e) {}
+          }
+          if (data.trainerCode) {
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(7);
+            doc.text(data.trainerCode, COL_3LC, y);
+          }
+        }
+        y += 6;
+      });
+    }
+    
+    // ═══ DRAW ALL SECTIONS ═══
     drawSection('FLIGHT PREPARATION BRIEFING', [
-      { title: 'Route Briefing Contents:', items: [
-        'TAFS & METARS for destination, alternates & ERAs',
-        'NOTAMS for destination, Alternates and ERAs and route',
-        'SIG WX & Upper Wind Charts',
-        'SIGMETS'
+      { title: 'Route Briefing Contents:', num: '1.1', items: [
+        { n: 'a', t: 'TAFS & METARS for destination, alternates & ERAs' },
+        { n: 'b', t: 'NOTAMS for destination, Alternates and ERAs and route' },
+        { n: 'c', t: 'SIG WX & Upper Wind Charts' },
+        { n: 'd', t: 'SIGMETS' }
       ]},
-      { title: 'Flight Plan:', items: [
-        'Check Flt No. Date, Route & A/C Registration',
-        'Note - Max FL, average W/C and Max Shear',
-        'Note - Trip fuel and flight time',
-        'Note - Critical Fuel - Calculate diversion fuel',
-        'Note - TOTAL FUEL'
+      { title: 'Flight Plan:', num: '1.2', items: [
+        { n: 'a', t: 'Check Flt No. Date, Route & A/C Registration' },
+        { n: 'b', t: 'Note - Max FL, average W/C and Max Shear' },
+        { n: 'c', t: 'Note - Trip fuel and flight time' },
+        { n: 'd', t: 'Note - Critical Fuel - Calculate diversion fuel' },
+        { n: 'e', t: 'Note - TOTAL FUEL' }
       ]},
-      { title: 'FD Pro Route/Waypoints:', items: [
-        'Insert OFP Route',
-        'Create and insert ENTRY and EXIT waypoints',
-        'Verify EDTO waypoints (incl. EDTO Entry and Exit points)',
-        'Create and insert ETPs (as required)',
-        'No-Go Areas'
+      { title: 'FD Pro Route/Waypoints:', num: '1.3', items: [
+        { n: 'a', t: 'Insert OFP Route' },
+        { n: 'b', t: 'Create and insert ENTRY and EXIT waypoints' },
+        { n: 'c', t: 'Verify EDTO waypoints (incl. EDTO Entry and Exit points)' },
+        { n: 'd', t: 'Create and insert ETPs (as required)' },
+        { n: 'e', t: 'No-Go Areas' }
       ]}
     ], 1);
     
     drawFlatSection('PRE-FLIGHT', [
-      'Aircraft Status',
-      '  Consult MEL',
-      '    RVSM Requirements',
-      '    EDTO Requirements',
-      'Fuel Crossfeed Valve - i.a.w. FCOM Fuel Crossfeed Valve Check',
-      'Aircraft Clocks - UTC set',
-      'Flight Plan Route - Enter FPL into FMC',
-      'Route Leg Winds - Insert winds',
-      'EDTO Tracks and Distances - Verified and Checked'
+      { t: 'Aircraft Status', n: '1', sub: [
+        { t: 'Consult MEL', n: '2', sub: [
+          { t: 'RVSM Requirements', n: '3' },
+          { t: 'EDTO Requirements', n: '4' }
+        ]}
+      ]},
+      { t: 'Fuel Crossfeed Valve - i.a.w. FCOM Fuel Crossfeed Valve Check', n: '5' },
+      { t: 'Aircraft Clocks - UTC set', n: '6' },
+      { t: 'Flight Plan Route - Enter FPL into FMC', n: '7' },
+      { t: 'Route Leg Winds - Insert winds', n: '8' },
+      { t: 'EDTO Tracks and Distances - Verified and Checked', n: '9' }
     ], 3);
     
     drawFlatSection('ENROUTE - PRIOR TO EDTO ENTRY POINT', [
-      'EDTO Clearance (40 Minutes before)',
-      'Weather from OCC - SATPHONE 30 minutes before',
-      'APU 15 minutes before ENTRY point',
-      'EDTO Significant Systems Operation',
-      'FMC Position - Check',
-      'FMC Route - If changed then confirm modification (CPDLC)',
-      'CDU FIX page - adequate AD 428nm ARCs',
-      'Flight Level and Mach Number - as cleared',
-      'HF and SELCAL - Checked',
-      'Radios and Transponder',
-      'Approaching Waypoints TRK and DIST',
-      'Passing Each Waypoint Actual Track',
-      'Position Report',
-      '10 Minute after passing waypoint',
-      'Midpoint Check winds and times',
-      'ETP CDU FIX page - updated'
+      { t: 'EDTO Clearance (40 Minutes before)', n: '1' },
+      { t: 'Weather from OCC - SATPHONE 30 minutes before', n: '2' },
+      { t: 'APU 15 minutes before ENTRY point', n: '3' },
+      { t: 'EDTO Significant Systems Operation', n: '4' },
+      { t: 'FMC Position - Check', n: '5' },
+      { t: 'FMC Route - If changed then confirm modification (CPDLC)', n: '6' },
+      { t: 'CDU FIX page - adequate AD 428nm ARCs', n: '7' },
+      { t: 'Flight Level and Mach Number - as cleared', n: '8' },
+      { t: 'HF and SELCAL - Checked', n: '9' },
+      { t: 'Radios and Transponder', n: '10' },
+      { t: 'Approaching Waypoints TRK and DIST', n: '11' },
+      { t: 'Passing Each Waypoint Actual Track', n: '12' },
+      { t: 'Position Report', n: '13' },
+      { t: '10 Minute after passing waypoint', n: '14' },
+      { t: 'Midpoint Check winds and times', n: '15' },
+      { t: 'ETP CDU FIX page - updated', n: '16' }
     ], 4);
     
-    // ═══ PAGE 2 ═══
-    checkPage(120);
-    
     drawFlatSection('ENROUTE - AFTER EDTO EXIT POINT', [
-      'Mach Number',
-      'CDU Offset (If applied during EDTO)',
-      'Cruise FL - Review',
-      'FMC Position - Checked',
-      'Fuel Crossfeed Valve',
-      'ETL Entry - after shutdown'
+      { t: 'Mach Number', n: '1' },
+      { t: 'CDU Offset (If applied during EDTO)', n: '2' },
+      { t: 'Cruise FL - Review', n: '3' },
+      { t: 'FMC Position - Checked', n: '4' },
+      { t: 'Fuel Crossfeed Valve', n: '5' },
+      { t: 'ETL Entry - after shutdown', n: '6' }
     ], 5);
     
-    drawSection('NON-NORMALS', [
-      { title: 'Re-Routing:', items: [] },
-      { title: 'Diversion Planning:', items: [] },
-      { title: 'MEL - APU Fault:', items: [] },
-      { title: 'Engine Non-Normal requiring diversion:', items: [] },
-      { title: 'Pressurisation Non-Normal requiring diversion:', items: [] },
-      { title: 'Navigation Non-Normal:', items: [] },
-      { title: 'Weather Contingency:', items: [] },
-      { title: 'Non-Comms Contingency:', items: [] },
-      { title: 'Other Non-Normal:', items: [] }
+    drawSectionWithItemChecks('NON-NORMALS', [
+      { t: 'Re-Routing', n: '1' },
+      { t: 'Diversion Planning', n: '2' },
+      { t: 'MEL - APU Fault', n: '3' },
+      { t: 'Engine Non-Normal requiring diversion', n: '4' },
+      { t: 'Pressurisation Non-Normal requiring diversion', n: '5' },
+      { t: 'Navigation Non-Normal', n: '6' },
+      { t: 'Weather Contingency', n: '7' },
+      { t: 'Non-Comms Contingency', n: '8' },
+      { t: 'Other Non-Normal', n: '9' }
     ], 6);
     
     // ═══ TRAINER COMMENTS ═══
@@ -324,21 +354,18 @@ function generatePDFCode() {
     y += 6;
     doc.setDrawColor(0);
     doc.rect(M, y, CW, 25);
-    if (data.instructorComments) {
+    if (data.trainerComments) {
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(8);
-      const lines = doc.splitTextToSize(data.instructorComments, CW - 6);
-      lines.forEach((line, i) => { if (i < 6) doc.text(line, M + 3, y + 5 + i * 3.5); });
+      const lines = doc.splitTextToSize(data.trainerComments, CW - 6);
+      lines.forEach((line, i) => { if (i < 5) doc.text(line, M + 3, y + 5 + i * 4); });
     }
-    y += 30;
+    y += 31;
     
     // ═══ SIGNATURES ═══
-    checkPage(25);
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(9);
-    
+    checkPage(40);
     doc.text('Trainer Name:', M + 2, y);
-    doc.line(M + 28, y + 1, 80, y + 1);
+    doc.line(M + 29, y + 1, 80, y + 1);
     if (data.trainerName) { doc.setFont('helvetica', 'bold'); doc.text(data.trainerName, M + 29, y); doc.setFont('helvetica', 'normal'); }
     doc.text('Trainer Signature:', 85, y);
     if (data.trainerSignature && data.trainerSignature.startsWith('data:')) {
@@ -359,11 +386,9 @@ function generatePDFCode() {
     checkPage(30);
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(10);
-    if (data.preparedBy) { doc.setFont('helvetica', 'bold'); doc.setFontSize(10); doc.text(data.preparedBy, M + 2, y); }
-    doc.setFont('helvetica', 'normal');
-    doc.setFont('helvetica', 'bold');
-    doc.text('General Comments or Recommendations', M + 152, y);
-    y += 6;
+    if (data.preparedBy) { doc.text(data.preparedBy, M + 152, y); }
+    doc.text('General Comments or Recommendations', M + 152, y + 5);
+    y += 11;
     doc.setDrawColor(0);
     doc.rect(M, y, CW, 20);
     if (data.generalComments) {
@@ -383,7 +408,7 @@ function generatePDFCode() {
     y += 6;
     doc.line(30, y, 100, y);
     doc.line(140, y, 180, y);
-    if (data.preparedBy) { doc.setFont('helvetica', 'bold'); doc.setFontSize(8); doc.text(data.preparedBy, 100 - doc.getTextWidth(data.preparedBy), y - 2); }
+    if (data.preparedBy) { doc.setFont('helvetica', 'bold'); doc.setFontSize(8); const pw = doc.getTextWidth(data.preparedBy); doc.text(data.preparedBy, 100 - pw, y - 2); }
     if (data.preparedDate) { doc.setFont('helvetica', 'bold'); doc.text(formatDate(data.preparedDate), 160, y - 2); }
     
     doc.setFont('helvetica', 'italic');
