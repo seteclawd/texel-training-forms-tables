@@ -75,15 +75,15 @@
       ]}
     ]},
     { id: 6, title: 'NON-NORMALS', groups: [
-      { title: 'Re-Routing:', items: ['Check'] },
-      { title: 'Diversion Planning:', items: ['Check'] },
-      { title: 'MEL - APU Fault:', items: ['Check'] },
-      { title: 'Engine Non-Normal requiring diversion:', items: ['Check'] },
-      { title: 'Pressurisation Non-Normal requiring diversion:', items: ['Check'] },
-      { title: 'Navigation Non-Normal:', items: ['Check'] },
-      { title: 'Weather Contingency:', items: ['Check'] },
-      { title: 'Non-Comms Contingency:', items: ['Check'] },
-      { title: 'Other Non-Normal:', items: ['Check'] }
+      { title: 'Re-Routing:', items: [] },
+      { title: 'Diversion Planning:', items: [] },
+      { title: 'MEL - APU Fault:', items: [] },
+      { title: 'Engine Non-Normal requiring diversion:', items: [] },
+      { title: 'Pressurisation Non-Normal requiring diversion:', items: [] },
+      { title: 'Navigation Non-Normal:', items: [] },
+      { title: 'Weather Contingency:', items: [] },
+      { title: 'Non-Comms Contingency:', items: [] },
+      { title: 'Other Non-Normal:', items: [] }
     ]}
   ];
 
