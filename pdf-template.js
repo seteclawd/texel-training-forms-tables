@@ -130,58 +130,84 @@ function generatePDFCode() {
     doc.text('Texel 3LC', COL_3LC, y + 3);
     y += 8;
     
-    // ═══ DRAW SECTION WITH GROUPS ═══
-    // Groups have checkboxes, sub-items don't
+    // ═══ DRAW SECTION WITH GROUPS (each group has its own checkboxes) ═══
     function drawSection(title, groups, secId) {
       if (!groups || groups.length === 0) return;
       checkPage(10);
       
-      // Section header (only if different from group title)
-      const isSingleGroup = groups.length === 1 && groups[0].title === title;
-      if (!isSingleGroup) {
-        doc.setFont('helvetica', 'bold');
-        doc.setFontSize(10);
-        doc.text(title, M + 2, y);
-        y += 6;
-      }
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(10);
+      doc.text(title, M + 2, y);
+      y += 6;
       
       groups.forEach((group, gIdx) => {
         checkPage(8);
         const gKey = 's' + secId + '-g' + gIdx;
         const gStatus = data.checklist ? data.checklist[gKey] : '';
         
-        // Group title (bold) - only show if not a single group
-        if (!isSingleGroup) {
-          doc.setFont('helvetica', 'bold');
-          doc.setFontSize(8);
-          doc.text(group.title, M + 4, y + 1);
-          y += 5;
-        }
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(8);
+        doc.text(group.title, M + 4, y + 1);
         
-        // Checkboxes row - at the TOP of the group
         drawCheckbox(COL_CHK, gStatus === 'pass');
         drawCheckbox(COL_REDO, gStatus === 'fail');
         
-        // Draw trainer signature image if available
+        // Trainer signature
         if (data.itemSignatures && data.itemSignatures[gKey]) {
           const sigs = data.itemSignatures[gKey];
           if (sigs.trainer && sigs.trainer.startsWith('data:')) {
-            try { doc.addImage(sigs.trainer, 'PNG', COL_SIG, y - 2, 16, 6); } catch(e) {}
+            try {
+              doc.addImage(sigs.trainer, 'PNG', COL_SIG, y - 3, 12, 5);
+            } catch(e) {}
           }
         }
         
-        // Sub-items (indented with triangle bullet)
+        y += 5;
+        
         doc.setFont('helvetica', 'normal');
         doc.setFontSize(7);
         group.items.forEach(item => {
           checkPage(4);
-          const isSub = item.startsWith('  '); const indent = isSub ? M + 10 : M + 4; const bullet = isSub ? '\\u25CB ' : '\\u25B8 ';  // Triangle bullet
-          doc.text(bullet + item.trim(), indent, y + 1);
+          const isSub = item.startsWith('  ');
+          const indent = isSub ? M + 10 : M + 4;
+          doc.text('\\u25B8 ' + item.trim(), indent, y + 1);
           y += 4;
         });
         
         y += 2;
       });
+    }
+    
+    // ═══ FLAT SECTION (ONE checkbox pair for entire section) ═══
+    function drawFlatSection(title, items, secId) {
+      if (!items || items.length === 0) return;
+      checkPage(15);
+      
+      const sKey = 's' + secId;
+      const sStatus = data.checklist ? data.checklist[sKey] : '';
+      
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(10);
+      doc.text(title, M + 2, y);
+      
+      drawCheckbox(COL_CHK, sStatus === 'pass');
+      drawCheckbox(COL_REDO, sStatus === 'fail');
+      
+      y += 6;
+      
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(7);
+      items.forEach(item => {
+        checkPage(4);
+        const isSubSub = item.startsWith('    ');
+        const isSub = !isSubSub && item.startsWith('  ');
+        const indent = isSubSub ? M + 14 : (isSub ? M + 10 : M + 4);
+        const bullet = isSubSub ? '\\u25CB ' : '\\u25B8 ';
+        doc.text(bullet + item.trim(), indent, y + 1);
+        y += 4;
+      });
+      
+      y += 3;
     }
     
     // ═══ ALL SECTIONS ═══
@@ -208,57 +234,47 @@ function generatePDFCode() {
       ]}
     ], 1);
     
-    drawSection('PRE-FLIGHT', [
-      { title: 'Aircraft Status:', items: [
-        'Consult MEL - RVSM Requirements',
-        'Consult MEL - EDTO Requirements'
-      ]},
-      { title: 'Fuel Crossfeed Valve:', items: [
-        'i.a.w. FCOM Fuel Crossfeed Valve Check'
-      ]},
-      { title: 'Aircraft Clocks:', items: [
-        'UTC set'
-      ]},
-      { title: 'Flight Plan Route:', items: [
-        'Enter FPL into FMC'
-      ]},
-      { title: 'Route Leg Winds:', items: [
-        'Insert winds'
-      ]},
-      { title: 'EDTO Tracks and Distances:', items: [
-        'Verified and Checked'
-      ]}
+    drawFlatSection('PRE-FLIGHT', [
+      'Aircraft Status',
+      '  Consult MEL',
+      '    RVSM Requirements',
+      '    EDTO Requirements',
+      'Fuel Crossfeed Valve - i.a.w. FCOM Fuel Crossfeed Valve Check',
+      'Aircraft Clocks - UTC set',
+      'Flight Plan Route - Enter FPL into FMC',
+      'Route Leg Winds - Insert winds',
+      'EDTO Tracks and Distances - Verified and Checked'
     ], 3);
     
-    drawSection('ENROUTE - PRIOR TO EDTO ENTRY POINT', [
-      { title: 'EDTO Clearance:', items: ['40 Minutes before'] },
-      { title: 'Weather from OCC:', items: ['SATPHONE 30 minutes before'] },
-      { title: 'APU:', items: ['15 minutes before ENTRY point'] },
-      { title: 'EDTO Significant Systems Operation:', items: ['Check'] },
-      { title: 'FMC Position:', items: ['Check'] },
-      { title: 'FMC Route:', items: ['If changed then confirm modification (CPDLC)'] },
-      { title: 'CDU FIX page:', items: ['adequate AD 428nm ARCs'] },
-      { title: 'Flight Level and Mach Number:', items: ['as cleared'] },
-      { title: 'HF and SELCAL:', items: ['Checked'] },
-      { title: 'Radios and Transponder:', items: ['Check'] },
-      { title: 'Approaching Waypoints:', items: ['TRK and DIST'] },
-      { title: 'Passing Each Waypoint:', items: ['Actual Track'] },
-      { title: 'Position Report:', items: ['Check'] },
-      { title: '10 Minute after passing waypoint:', items: ['Check'] },
-      { title: 'Midpoint Check:', items: ['winds and times'] },
-      { title: 'ETP CDU FIX page:', items: ['updated'] }
+    drawFlatSection('ENROUTE - PRIOR TO EDTO ENTRY POINT', [
+      'EDTO Clearance (40 Minutes before)',
+      'Weather from OCC - SATPHONE 30 minutes before',
+      'APU 15 minutes before ENTRY point',
+      'EDTO Significant Systems Operation',
+      'FMC Position - Check',
+      'FMC Route - If changed then confirm modification (CPDLC)',
+      'CDU FIX page - adequate AD 428nm ARCs',
+      'Flight Level and Mach Number - as cleared',
+      'HF and SELCAL - Checked',
+      'Radios and Transponder',
+      'Approaching Waypoints TRK and DIST',
+      'Passing Each Waypoint Actual Track',
+      'Position Report',
+      '10 Minute after passing waypoint',
+      'Midpoint Check winds and times',
+      'ETP CDU FIX page - updated'
     ], 4);
     
     // ═══ PAGE 2 ═══
     checkPage(120);
     
-    drawSection('ENROUTE - AFTER EDTO EXIT POINT', [
-      { title: 'Mach Number:', items: ['Check'] },
-      { title: 'CDU Offset:', items: ['If applied during EDTO'] },
-      { title: 'Cruise FL:', items: ['Review'] },
-      { title: 'FMC Position:', items: ['Checked'] },
-      { title: 'Fuel Crossfeed Valve:', items: ['Check'] },
-      { title: 'ETL Entry:', items: ['after shutdown'] }
+    drawFlatSection('ENROUTE - AFTER EDTO EXIT POINT', [
+      'Mach Number',
+      'CDU Offset (If applied during EDTO)',
+      'Cruise FL - Review',
+      'FMC Position - Checked',
+      'Fuel Crossfeed Valve',
+      'ETL Entry - after shutdown'
     ], 5);
     
     drawSection('NON-NORMALS', [
