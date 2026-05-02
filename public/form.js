@@ -556,9 +556,9 @@
     function drawCheckbox(x, checked) {
       doc.rect(x, y - 2, BOX, BOX);
       if (checked) {
-        doc.setFont('zapfdingbats');
+        doc.setFont('helvetica', 'bold');
         doc.setFontSize(8);
-        doc.text('8', x + 0.5, y + 1.5);
+        doc.text('X', x + 1, y + 1.5);
         doc.setFont('helvetica');
         doc.setFontSize(8);
       }
@@ -576,7 +576,7 @@
     
         // ═══ TRAINEE DETAILS BOX ═══
     doc.setLineWidth(0.3);
-    doc.rect(M, y, CW, 35);
+    doc.rect(M, y, CW, 42);
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(9);
     doc.text('Trainee and Simulator Details', 105, y + 5, { align: 'center' });
@@ -601,7 +601,7 @@
     doc.line(138, ry + 1, PAGE_W - M - 2, ry + 1);
     if (data.licenceNo) { doc.setFont('helvetica', 'bold'); doc.text(data.licenceNo, 139, ry); doc.setFont('helvetica', 'normal'); }
     
-    // Row 2: Type of session | Simulator/Aircraft | Sim Registration
+    // Row 2: Type of session | Simulator/Aircraft | Location
     ry += 8;
     doc.text('Type of session:', M + 2, ry);
     if (data.sessionType) { doc.setFont('helvetica', 'bold'); doc.text(data.sessionType, M + 33, ry); doc.setFont('helvetica', 'normal'); }
@@ -614,11 +614,11 @@
     if (data.sessionType === 'Aircraft') { doc.setFont('helvetica', 'bold'); doc.text('[X]', 98, ry); }
     doc.setFont('helvetica', 'normal');
     
-    doc.text('Sim Registration:', 132, ry);
-    doc.line(158, ry + 1, PAGE_W - M - 2, ry + 1);
-    if (data.simRegistration) { doc.setFont('helvetica', 'bold'); doc.text(data.simRegistration, 159, ry); doc.setFont('helvetica', 'normal'); }
+    doc.text('Location:', 125, ry);
+    doc.line(143, ry + 1, PAGE_W - M - 2, ry + 1);
+    if (data.location) { doc.setFont('helvetica', 'bold'); doc.text(data.location, 144, ry); doc.setFont('helvetica', 'normal'); }
     
-    // Row 3: Date | EDTO Validity Expiry
+    // Row 3: Date | EDTO Validity Expiry | Sim Registration
     ry += 8;
     doc.text('Date:', M + 2, ry);
     doc.line(M + 14, ry + 1, 65, ry + 1);
@@ -627,6 +627,10 @@
     doc.text('EDTO Validity Expiry:', 70, ry);
     doc.line(108, ry + 1, 150, ry + 1);
     if (data.edtoExpiry) { doc.setFont('helvetica', 'bold'); doc.text(formatDate(data.edtoExpiry), 109, ry); doc.setFont('helvetica', 'normal'); }
+    
+    doc.text('Sim Registration:', 155, ry);
+    doc.line(180, ry + 1, PAGE_W - M - 2, ry + 1);
+    if (data.simRegistration) { doc.setFont('helvetica', 'bold'); doc.text(data.simRegistration, 181, ry); doc.setFont('helvetica', 'normal'); }
     
     y = 72;
     
@@ -701,7 +705,11 @@
             y += 3.5;
           });
         }
-        y += 2;
+        y += 1;
+        // Section separator line
+        doc.setDrawColor(180, 180, 180);
+        doc.line(M, y, M + CW, y);
+        y += 1;
       });
     }
     
@@ -766,7 +774,7 @@
         const iKey = 's' + secId + '-i' + iIdx;
         const iStatus = data.checklist ? data.checklist[iKey] : '';
         
-        doc.setFont('helvetica', 'bold');
+        doc.setFont('helvetica', 'normal');
         doc.setFontSize(8);
         doc.text(item.n + '. ' + item.t, M + 4, y + 1);
         
@@ -783,8 +791,17 @@
             doc.text(data.trainerCode, COL_3LC, y);
           }
         }
-        y += 6;
+        y += 4;
       });
+      // Section separator line
+      y += 1;
+      doc.setDrawColor(180, 180, 180);
+      doc.line(M, y, M + CW, y);
+      y += 1;
+      // Section separator line
+      doc.setDrawColor(180, 180, 180);
+      doc.line(M, y, M + CW, y);
+      y += 2;
     }
     
     // ═══ DRAW ALL SECTIONS ═══
@@ -931,9 +948,12 @@
     if (data.preparedBy) { doc.setFont('helvetica', 'bold'); doc.setFontSize(8); const pw = doc.getTextWidth(data.preparedBy); doc.text(data.preparedBy, 100 - pw, y - 2); }
     if (data.preparedDate) { doc.setFont('helvetica', 'bold'); doc.text(formatDate(data.preparedDate), 160, y - 2); }
     
-    doc.setFont('helvetica', 'italic');
+    // Footer
+    doc.setFont('helvetica', 'normal');
     doc.setFontSize(7);
-    doc.text('Page 2 of 2', 105, PAGE_H - 5, { align: 'center' });
+    doc.text('TA-TD-20', M + 2, PAGE_H - 5);
+    doc.text(data.footerTraineeName || data.traineeName || '', 105, PAGE_H - 5, { align: 'center' });
+    doc.text('Page 2 of 2', PAGE_W - M - 2, PAGE_H - 5, { align: 'right' });
     
     return doc.output('datauristring');
   }
