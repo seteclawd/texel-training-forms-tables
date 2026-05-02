@@ -600,7 +600,7 @@
         
         // NON-NORMALS (secId=6): only show sig/3LC on fail; others: always
         const isNonNormal = secId === 6;
-        const showSigs = !isNonNormal || gStatus === 'fail';
+        const showSigs = !isNonNormal || gStatus === 'pass' || gStatus === 'fail';
         
         if (showSigs && (data.trainerSignature || data.trainerCode)) {
           if (data.trainerSignature && data.trainerSignature.startsWith('data:')) {
@@ -820,7 +820,7 @@
     doc.text('Page 2 of 2', 105, PAGE_H - 5, { align: 'center' });
     
     return doc.output('datauristring');
-  }
+  }}
 
   // ── Preview & Submit ───────────────────────────────────────────────
   let currentPDFData = null;
