@@ -327,11 +327,18 @@
   async function saveDraft() {
     try {
       if (!db) { alert('Database not ready. Please try again.'); return; }
+      const btn = document.querySelector('.btn-draft');
+      btn.classList.add('saving');
+      btn.textContent = '✓ Saved!';
       const draft = collectFormData(false);
       await dbPut(DRAFT_KEY, draft);
       const ind = document.getElementById('draftIndicator');
       ind.classList.add('visible');
-      setTimeout(() => ind.classList.remove('visible'), 2000);
+      setTimeout(() => {
+        ind.classList.remove('visible');
+        btn.classList.remove('saving');
+        btn.textContent = 'Save Draft';
+      }, 2000);
     } catch(e) {
       console.error('Save draft error:', e);
       alert('Could not save draft: ' + e.message);
