@@ -101,9 +101,9 @@ function generatePDFCode() {
     doc.line(72, ry + 1, 100, ry + 1);
     if (data.date) { doc.setFont('helvetica', 'bold'); doc.text(data.date, 73, ry); doc.setFont('helvetica', 'normal'); }
     // EDTO Validity Expiry - moved 20px left
-    doc.text('EDTO Validity Expiry:', 115, ry);
-    doc.line(140, ry + 1, PAGE_W - M - 2, ry + 1);
-    if (data.edtoExpiry) { doc.setFont('helvetica', 'bold'); doc.text(data.edtoExpiry, 141, ry); doc.setFont('helvetica', 'normal'); }
+    doc.text('EDTO Validity Expiry:', 95, ry);
+    doc.line(120, ry + 1, PAGE_W - M - 2, ry + 1);
+    if (data.edtoExpiry) { doc.setFont('helvetica', 'bold'); doc.text(data.edtoExpiry, 121, ry); doc.setFont('helvetica', 'normal'); }
     
     // Row 4
     ry += 7;
@@ -150,16 +150,27 @@ function generatePDFCode() {
       
       items.forEach((item, idx) => {
         checkPage(5);
-        const key = 's' + secId + '-i' + idx;  // Correct key format: s1-i0, s1-i1, etc.
+        const key = 's' + secId + '-i' + idx;
         const status = data.checklist ? data.checklist[key] : '';
         
         // Checkboxes
         drawCheckbox(COL1_X, status === 'pass');
         drawCheckbox(COL2_X, status === 'fail');
         
-        // Signature placeholder (faint line)
+        // Trainer signature from itemSignatures
+        const sigs = data.itemSignatures ? data.itemSignatures[key] : null;
+        if (sigs && sigs.trainer && sigs.trainer.startsWith('data:')) {
+          try {
+            doc.addImage(sigs.trainer, 'PNG', COL3_X, y - 3, 16, 6);
+          } catch(e) {}
+        } else {
+          doc.setDrawColor(200, 200, 200);
+          doc.line(COL3_X, y + 1, COL3_X + 16, y + 1);
+          doc.setDrawColor(0);
+        }
+        
+        // Texel 3LC line
         doc.setDrawColor(200, 200, 200);
-        doc.line(COL3_X, y + 1, COL3_X + 16, y + 1);
         doc.line(COL4_X, y + 1, COL4_X + 12, y + 1);
         doc.setDrawColor(0);
         
