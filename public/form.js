@@ -456,7 +456,7 @@
     const COL_CHK = 113;      // Satisfactorily Completed
     const COL_REDO = 138;     // Incomplete or Redo
     const COL_SIG = 163;      // Trainer Signature
-    const COL_3LC = 182;      // Trainer Texel 3LC
+    const COL_3LC = 200;      // Trainer Texel 3LC
     const BOX = 5;            // Checkbox size (bigger for groups)
     
     function checkPage(needed) {
@@ -591,10 +591,10 @@
         drawCheckbox(COL_CHK, gStatus === 'pass');
         drawCheckbox(COL_REDO, gStatus === 'fail');
         
-        // Trainer signature + 3LC: all sections except NON-NORMALS show always;
-        // NON-NORMALS only shows when marked as fail (Redo Required)
-        const showSigs = secId !== 6 || gStatus === 'fail';
-        if (showSigs) {
+        // NON-NORMALS (secId=6): only show sig/3LC on fail; others: always
+        const isNonNormal = secId === 6;
+        const showSigs = !isNonNormal || gStatus === 'fail';
+        if (showSigs && (data.trainerSignature || data.trainerCode)) {
           if (data.trainerSignature && data.trainerSignature.startsWith('data:')) {
             try {
               doc.addImage(data.trainerSignature, 'PNG', COL_SIG, y - 3, 12, 5);
