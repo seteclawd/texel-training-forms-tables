@@ -586,15 +586,15 @@
     // Row 3
     ry += 7;
     doc.text('Type of session:', M + 2, ry);
-    doc.line(M + 32, ry + 1, 50, ry + 1);
+    doc.line(M + 32, ry + 1, 45, ry + 1);
     if (data.sessionType) { doc.setFont('helvetica', 'bold'); doc.text(data.sessionType, M + 33, ry); doc.setFont('helvetica', 'normal'); }
-    doc.text('Date:', 55, ry);
-    doc.line(62, ry + 1, 85, ry + 1);
-    if (data.date) { doc.setFont('helvetica', 'bold'); doc.text(data.date, 63, ry); doc.setFont('helvetica', 'normal'); }
-    // EDTO Validity Expiry - FAR RIGHT
-    doc.text('EDTO Validity Expiry:', 130, ry);
-    doc.line(155, ry + 1, PAGE_W - M - 2, ry + 1);
-    if (data.edtoExpiry) { doc.setFont('helvetica', 'bold'); doc.text(data.edtoExpiry, 156, ry); doc.setFont('helvetica', 'normal'); }
+    doc.text('Date:', 65, ry);
+    doc.line(72, ry + 1, 100, ry + 1);
+    if (data.date) { doc.setFont('helvetica', 'bold'); doc.text(data.date, 73, ry); doc.setFont('helvetica', 'normal'); }
+    // EDTO Validity Expiry - moved 20px left
+    doc.text('EDTO Validity Expiry:', 115, ry);
+    doc.line(140, ry + 1, PAGE_W - M - 2, ry + 1);
+    if (data.edtoExpiry) { doc.setFont('helvetica', 'bold'); doc.text(data.edtoExpiry, 141, ry); doc.setFont('helvetica', 'normal'); }
     
     // Row 4
     ry += 7;
@@ -794,15 +794,16 @@
     y += 26;
     
     // ═══ PREPARED BY ═══
-    checkPage(15);
+    checkPage(20);
+    y += 15;  // Move section down 40px from previous content
     doc.setFontSize(9);
-    doc.text('Signature / Stamp', 50, y + 3);
-    doc.text('Date', PAGE_W - M - 35, y + 3);
+    doc.text('Signature / Stamp', 30, y);
+    doc.text('Date', 140, y);  // Date label moved left
     y += 6;
-    doc.line(30, y, 100, y);
-    doc.line(PAGE_W - M - 55, y, PAGE_W - M - 5, y);
-    if (data.preparedBy) { doc.setFont('helvetica', 'bold'); doc.setFontSize(8); doc.text(data.preparedBy, 35, y - 2); }
-    if (data.preparedDate) { doc.setFont('helvetica', 'bold'); doc.text(data.preparedDate, PAGE_W - M - 52, y - 2); }
+    doc.line(30, y, 100, y);  // Signature line
+    doc.line(140, y, 180, y);  // Date line
+    if (data.preparedBy) { doc.setFont('helvetica', 'bold'); doc.setFontSize(8); doc.text(data.preparedBy, 30, y + 5); }
+    if (data.preparedDate) { doc.setFont('helvetica', 'bold'); doc.text(data.preparedDate, 160, y - 2); }  // Date value moved right
     
     doc.setFont('helvetica', 'italic');
     doc.setFontSize(7);
