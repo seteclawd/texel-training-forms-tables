@@ -600,7 +600,7 @@
         
         // NON-NORMALS (secId=6): only show sig/3LC on fail; others: always
         const isNonNormal = secId === 6;
-        const showSigs = !isNonNormal || gStatus === 'pass' || gStatus === 'fail';
+        const showSigs = !isNonNormal || gStatus;
         
         if (showSigs && (data.trainerSignature || data.trainerCode)) {
           if (data.trainerSignature && data.trainerSignature.startsWith('data:')) {
@@ -731,15 +731,15 @@
     ], 5);
     
     drawSection('NON-NORMALS', [
-      { title: 'Re-Routing:', items: ['Check'] },
-      { title: 'Diversion Planning:', items: ['Check'] },
-      { title: 'MEL - APU Fault:', items: ['Check'] },
-      { title: 'Engine Non-Normal requiring diversion:', items: ['Check'] },
-      { title: 'Pressurisation Non-Normal requiring diversion:', items: ['Check'] },
-      { title: 'Navigation Non-Normal:', items: ['Check'] },
-      { title: 'Weather Contingency:', items: ['Check'] },
-      { title: 'Non-Comms Contingency:', items: ['Check'] },
-      { title: 'Other Non-Normal:', items: ['Check'] }
+      { title: 'Re-Routing:', items: [] },
+      { title: 'Diversion Planning:', items: [] },
+      { title: 'MEL - APU Fault:', items: [] },
+      { title: 'Engine Non-Normal requiring diversion:', items: [] },
+      { title: 'Pressurisation Non-Normal requiring diversion:', items: [] },
+      { title: 'Navigation Non-Normal:', items: [] },
+      { title: 'Weather Contingency:', items: [] },
+      { title: 'Non-Comms Contingency:', items: [] },
+      { title: 'Other Non-Normal:', items: [] }
     ], 6);
     
     // ═══ TRAINER COMMENTS ═══
@@ -774,15 +774,11 @@
     y += 12;
     
     doc.text('Trainee Name:', M + 2, y);
-    doc.line(M + 28, y + 1, 75, y + 1);
+    doc.line(M + 28, y + 1, 80, y + 1);
     if (data.footerTraineeName || data.traineeName) { doc.setFont('helvetica', 'bold'); doc.text(data.footerTraineeName || data.traineeName, M + 29, y); doc.setFont('helvetica', 'normal'); }
-    doc.setFont('helvetica', 'normal');
-    doc.text('RANK:', 85, y);
-    doc.line(97, y + 1, 125, y + 1);
-    if (data.traineeRank) { doc.setFont('helvetica', 'bold'); doc.text(data.traineeRank, 98, y); doc.setFont('helvetica', 'normal'); }
-    doc.text('Trainee Signature:', 85, y);
+    doc.text('Trainee Signature:', 120, y);
     if (data.traineeSignature && data.traineeSignature.startsWith('data:')) {
-      try { doc.addImage(data.traineeSignature, 'PNG', 110, y - 6, 45, 10); } catch(e) {}
+      try { doc.addImage(data.traineeSignature, 'PNG', 145, y - 6, 45, 10); } catch(e) {}
     }
     y += 15;
     
@@ -790,8 +786,9 @@
     checkPage(30);
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(10);
-    if (data.preparedBy) { doc.setFont('helvetica', 'normal'); doc.setFontSize(8); doc.text(data.preparedBy, M + 2, y); }
-    doc.text('General Comments or Recommendations', 105, y, { align: 'center' });
+    if (data.preparedBy) { doc.setFont('helvetica', 'bold'); doc.setFontSize(10); doc.text(data.preparedBy, M + 2, y); }
+    doc.setFont('helvetica', 'normal');
+    doc.text('General Comments or Recommendations', M + 2, y);
     y += 6;
     doc.setDrawColor(0);
     doc.rect(M, y, CW, 20);
