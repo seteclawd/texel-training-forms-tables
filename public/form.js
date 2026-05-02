@@ -364,11 +364,17 @@
   }
 
   async function saveDraft() {
-    const draft = collectFormData(false);
-    await dbPut(DRAFT_KEY, draft);
-    const ind = document.getElementById('draftIndicator');
-    ind.classList.add('visible');
-    setTimeout(() => ind.classList.remove('visible'), 2000);
+    try {
+      if (!db) { alert('Database not ready. Please try again.'); return; }
+      const draft = collectFormData(false);
+      await dbPut(DRAFT_KEY, draft);
+      const ind = document.getElementById('draftIndicator');
+      ind.classList.add('visible');
+      setTimeout(() => ind.classList.remove('visible'), 2000);
+    } catch(e) {
+      console.error('Save draft error:', e);
+      alert('Could not save draft: ' + e.message);
+    }
   }
 
   window.saveDraft = saveDraft;
@@ -491,80 +497,53 @@
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
     
-    const pageW = 210;
-    const pageH = 297;
-    const margin = 10;
-    const contentW = pageW - margin * 2;
-    const rightEdge = pageW - margin;
+    const PAGE_W = 210;
+    const PAGE_H = 297;
+    const M = 10; // margin
+    const CW = PAGE_W - M * 2; // content width = 190mm
     let y = 8;
     
-    // Column positions - shifted left so all columns fit
-    const colCheckX = 132;   // Satisfactorily Completed checkbox
-    const colRedoX = 155;    // Incomplete or Redo Required checkbox
-    const colSigX = 175;     // Trainer Signature
-    const col3lcX = 193;     // Trainer Texel 3LC (rightmost)
+    // ═══ COLUMN LAYOUT ═══
+    // Text takes 60%, columns take 40% of content width
+    const TEXT_END = 115;    // Item text ends here
+    const COL1_X = 118;     // Satisfactorily Completed checkbox
+    const COL2_X = 142;     // Incomplete or Redo checkbox
+    const COL3_X = 168;     // Trainer Signature (placeholder)
+    const COL4_X = 188;     // Trainer Texel 3LC (placeholder)
+    const BOX_SIZE = 3.5;
     
-    function checkPage(needed = 25) {
-      if (y > pageH - needed) {
+    function checkPage(needed) {
+      if (y > PAGE_H - (needed || 20)) {
         doc.addPage();
-        y = 18;
+        y = 22;
+        // Page 2+ header
         doc.setFontSize(8);
         doc.setFont('helvetica', 'normal');
-        doc.setTextColor(0);
-        doc.text('Form:TA-TD-20', margin, 10);
-        doc.text('Revision: 04', rightEdge - 20, 10);
+        doc.text('Form:TA-TD-20', M, 10);
         doc.setFontSize(10);
         doc.setFont('helvetica', 'bold');
         doc.text('B737 - EDTO/ETOPS TRAINING FORM', 105, 10, { align: 'center' });
         doc.setFontSize(8);
         doc.setFont('helvetica', 'normal');
-        doc.text('Date: 11-12-2025', rightEdge - 20, 14);
-        drawColumnHeaders();
+        doc.text('Revision: 04', PAGE_W - M - 20, 10);
+        doc.text('Date: 11-12-2025', PAGE_W - M - 20, 14);
         return true;
       }
       return false;
     }
     
-    function drawColumnHeaders() {
-      doc.setFillColor(220, 220, 220);
-      doc.rect(margin, y - 4, contentW, 10, 'F');
-      doc.setDrawColor(0);
-      doc.rect(margin, y - 4, contentW, 10);
-      
-      // Vertical separator lines between columns
-      doc.line(colCheckX - 2, y - 4, colCheckX - 2, y + 6);
-      doc.line(colRedoX - 2, y - 4, colRedoX - 2, y + 6);
-      doc.line(colSigX - 2, y - 4, colSigX - 2, y + 6);
-      
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(5.5);
-      doc.setTextColor(0);
-      doc.text('Satisfactorily', colCheckX, y - 1);
-      doc.text('Completed', colCheckX, y + 2);
-      doc.text('Incomplete', colRedoX, y - 1);
-      doc.text('or Redo', colRedoX, y + 1);
-      doc.text('Required', colRedoX, y + 2);
-      doc.text('Trainer', colSigX + 2, y - 1);
-      doc.text('Trainer', col3lcX, y - 1);
-      doc.text('Signature', colSigX + 2, y + 2);
-      doc.text('Texel 3LC', col3lcX, y + 2);
-      
-      y += 8;
-    }
-    
     function drawCheckbox(x, checked) {
-      doc.rect(x, y - 2.5, 3.5, 3.5);
+      doc.rect(x, y - 2.5, BOX_SIZE, BOX_SIZE);
       if (checked) {
-        doc.setFontSize(10);
-        doc.setFont('helvetica', 'bold');
-        doc.text('X', x + 0.6, y + 0.3);
+        doc.setFontSize(8);
+        doc.text('X', x + 0.7, y + 0.3);
       }
     }
     
     // ═══ PAGE 1 HEADER ═══
     doc.setFontSize(8);
     doc.setFont('helvetica', 'normal');
-    doc.text('Form:TA-TD-20', margin, 10);
+    doc.text('Form:TA-TD-20', M, 10);
     doc.setFontSize(12);
     doc.setFont('helvetica', 'bold');
     doc.text('B737 - EDTO/ETOPS', 105, 9, { align: 'center' });
@@ -572,133 +551,113 @@
     doc.text('TRAINING FORM', 105, 14, { align: 'center' });
     doc.setFontSize(8);
     doc.setFont('helvetica', 'normal');
-    doc.text('Revision: 04', rightEdge - 20, 10);
-    doc.text('Date: 11-12-2025', rightEdge - 20, 14);
-    
+    doc.text('Revision: 04', PAGE_W - M - 20, 10);
+    doc.text('Date: 11-12-2025', PAGE_W - M - 20, 14);
     y = 20;
     
-    // ═══ Trainee and Simulator Details Box ═══
-    doc.setDrawColor(0);
+    // ═══ TRAINEE DETAILS BOX ═══
     doc.setLineWidth(0.3);
-    doc.rect(margin, y, contentW, 30);
-    
+    doc.rect(M, y, CW, 30);
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(9);
     doc.text('Trainee and Simulator Details', 105, y + 5, { align: 'center' });
     
+    let ry = y + 12;
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(8);
-    let rowY = y + 12;
     
-    // Row 1: Trainee Name + Rank
-    doc.text('Trainee Name:', margin + 2, rowY);
-    if (data.traineeName) {
-      doc.setFont('helvetica', 'bold');
-      doc.text(data.traineeName, margin + 28, rowY);
-      doc.setFont('helvetica', 'normal');
-    }
-    doc.line(margin + 26, rowY + 1, 95, rowY + 1);
-    doc.text('Rank', 100, rowY);
-    doc.line(108, rowY + 1, 135, rowY + 1);
-    if (data.traineeRank) {
-      doc.setFont('helvetica', 'bold');
-      doc.text(data.traineeRank, 109, rowY);
-      doc.setFont('helvetica', 'normal');
-    }
+    // Row 1
+    doc.text('Trainee Name:', M + 2, ry);
+    if (data.traineeName) { doc.setFont('helvetica', 'bold'); doc.text(data.traineeName, M + 28, ry); doc.setFont('helvetica', 'normal'); }
+    doc.line(M + 26, ry + 1, 95, ry + 1);
+    doc.text('Rank', 100, ry);
+    doc.line(108, ry + 1, 135, ry + 1);
+    if (data.traineeRank) { doc.setFont('helvetica', 'bold'); doc.text(data.traineeRank, 109, ry); doc.setFont('helvetica', 'normal'); }
     
-    // Row 2: Sim Registration + Licence No
-    rowY += 7;
-    doc.text('Sim Registration:', margin + 2, rowY);
-    doc.line(margin + 32, rowY + 1, 75, rowY + 1);
-    if (data.simRegistration) {
-      doc.setFont('helvetica', 'bold');
-      doc.text(data.simRegistration, margin + 33, rowY);
-      doc.setFont('helvetica', 'normal');
-    }
-    doc.text('Licence No.:', 80, rowY);
-    doc.line(95, rowY + 1, 135, rowY + 1);
-    if (data.licenceNo) {
-      doc.setFont('helvetica', 'bold');
-      doc.text(data.licenceNo, 96, rowY);
-      doc.setFont('helvetica', 'normal');
-    }
+    // Row 2
+    ry += 7;
+    doc.text('Sim Registration:', M + 2, ry);
+    doc.line(M + 32, ry + 1, 70, ry + 1);
+    if (data.simRegistration) { doc.setFont('helvetica', 'bold'); doc.text(data.simRegistration, M + 33, ry); doc.setFont('helvetica', 'normal'); }
+    doc.text('Licence No.:', 75, ry);
+    doc.line(90, ry + 1, 135, ry + 1);
+    if (data.licenceNo) { doc.setFont('helvetica', 'bold'); doc.text(data.licenceNo, 91, ry); doc.setFont('helvetica', 'normal'); }
     
-    // Row 3: Type of session + Date + EDTO Validity Expiry (moved to right)
-    rowY += 7;
-    doc.text('Type of session:', margin + 2, rowY);
-    doc.line(margin + 32, rowY + 1, 55, rowY + 1);
-    if (data.sessionType) {
-      doc.setFont('helvetica', 'bold');
-      doc.text(data.sessionType, margin + 33, rowY);
-      doc.setFont('helvetica', 'normal');
-    }
-    doc.text('Date:', 60, rowY);
-    doc.line(67, rowY + 1, 95, rowY + 1);
-    if (data.date) {
-      doc.setFont('helvetica', 'bold');
-      doc.text(data.date, 68, rowY);
-      doc.setFont('helvetica', 'normal');
-    }
-    // EDTO Validity Expiry on the far right
-    doc.text('EDTO Validity Expiry:', 115, rowY);
-    doc.line(138, rowY + 1, rightEdge - 2, rowY + 1);
-    if (data.edtoExpiry) {
-      doc.setFont('helvetica', 'bold');
-      doc.text(data.edtoExpiry, 139, rowY);
-      doc.setFont('helvetica', 'normal');
-    }
+    // Row 3
+    ry += 7;
+    doc.text('Type of session:', M + 2, ry);
+    doc.line(M + 32, ry + 1, 50, ry + 1);
+    if (data.sessionType) { doc.setFont('helvetica', 'bold'); doc.text(data.sessionType, M + 33, ry); doc.setFont('helvetica', 'normal'); }
+    doc.text('Date:', 55, ry);
+    doc.line(62, ry + 1, 85, ry + 1);
+    if (data.date) { doc.setFont('helvetica', 'bold'); doc.text(data.date, 63, ry); doc.setFont('helvetica', 'normal'); }
+    // EDTO Validity Expiry - FAR RIGHT
+    doc.text('EDTO Validity Expiry:', 130, ry);
+    doc.line(155, ry + 1, PAGE_W - M - 2, ry + 1);
+    if (data.edtoExpiry) { doc.setFont('helvetica', 'bold'); doc.text(data.edtoExpiry, 156, ry); doc.setFont('helvetica', 'normal'); }
     
-    // Row 4: Location
-    rowY += 7;
-    doc.text('Location:', margin + 2, rowY);
-    doc.line(margin + 22, rowY + 1, 55, rowY + 1);
-    if (data.location) {
-      doc.setFont('helvetica', 'bold');
-      doc.text(data.location, margin + 23, rowY);
-      doc.setFont('helvetica', 'normal');
-    }
-    doc.text('Aircraft', rightEdge - 20, rowY);
+    // Row 4
+    ry += 7;
+    doc.text('Location:', M + 2, ry);
+    doc.line(M + 22, ry + 1, 55, ry + 1);
+    if (data.location) { doc.setFont('helvetica', 'bold'); doc.text(data.location, M + 23, ry); doc.setFont('helvetica', 'normal'); }
+    doc.text('Aircraft', PAGE_W - M - 20, ry);
     
     y = 55;
     
-    // ═══ EDTO/ETOPS Procedures header ═══
-    drawColumnHeaders();
+    // ═══ COLUMN HEADERS ═══
+    doc.setFillColor(220, 220, 220);
+    doc.rect(M, y - 4, CW, 10, 'F');
+    doc.setDrawColor(0);
+    doc.rect(M, y - 4, CW, 10);
+    // Vertical separators
+    doc.line(COL1_X - 2, y - 4, COL1_X - 2, y + 6);
+    doc.line(COL2_X - 2, y - 4, COL2_X - 2, y + 6);
+    doc.line(COL3_X - 2, y - 4, COL3_X - 2, y + 6);
     
-    // ═══ Section Helper ═══
-    function drawSection(title, items, sectionKey) {
-      checkPage(15);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(5);
+    doc.text('Satisfactorily', COL1_X, y);
+    doc.text('Completed', COL1_X, y + 3);
+    doc.text('Incomplete', COL2_X, y);
+    doc.text('or Redo', COL2_X, y + 2);
+    doc.text('Required', COL2_X, y + 4);
+    doc.text('Trainer', COL3_X + 3, y);
+    doc.text('Trainer', COL4_X, y);
+    doc.text('Signature', COL3_X + 3, y + 3);
+    doc.text('Texel 3LC', COL4_X, y + 3);
+    y += 8;
+    
+    // ═══ DRAW SECTION ═══
+    function drawSection(title, items, secId) {
+      checkPage(10);
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(9);
-      doc.setTextColor(0);
-      doc.text(title, margin + 2, y);
-      y += 6;
+      doc.text(title, M + 2, y);
+      y += 5;
       
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(7);
       
       items.forEach((item, idx) => {
         checkPage(5);
-        const key = sectionKey + '-' + idx;
+        const key = 's' + secId + '-i' + idx;  // Correct key format: s1-i0, s1-i1, etc.
         const status = data.checklist ? data.checklist[key] : '';
         
-        // Draw checkboxes
-        drawCheckbox(colCheckX, status === 'pass');
-        drawCheckbox(colRedoX, status === 'fail');
+        // Checkboxes
+        drawCheckbox(COL1_X, status === 'pass');
+        drawCheckbox(COL2_X, status === 'fail');
         
-        // Signature placeholder lines (faint)
+        // Signature placeholder (faint line)
         doc.setDrawColor(200, 200, 200);
-        doc.line(colSigX, y + 1, colSigX + 15, y + 1);
-        doc.line(col3lcX, y + 1, col3lcX + 12, y + 1);
+        doc.line(COL3_X, y + 1, COL3_X + 16, y + 1);
+        doc.line(COL4_X, y + 1, COL4_X + 12, y + 1);
         doc.setDrawColor(0);
         
-        // Draw item text
-        doc.setFontSize(7);
-        const textX = margin + 4;
-        doc.text(item, textX, y + 1);
-        
-        y += 5;
+        // Item text
+        doc.text(item, M + 4, y + 1);
+        y += 4.5;
       });
-      
       y += 2;
     }
     
@@ -720,7 +679,7 @@
       '  - Verify EDTO waypoints',
       '  - Create and insert ETPs (as required)',
       '  - No-Go Areas'
-    ], 's1');
+    ], 1);
     
     drawSection('PRE-FLIGHT', [
       'Aircraft Status - Consult MEL',
@@ -731,7 +690,7 @@
       'Flight Plan Route - Enter FPL into FMC',
       'Route Leg Winds - Insert winds',
       'EDTO Tracks and Distances - Verified'
-    ], 's3');
+    ], 3);
     
     drawSection('ENROUTE - PRIOR TO EDTO ENTRY POINT', [
       'EDTO Clearance (40 Minutes before)',
@@ -750,10 +709,10 @@
       '10 Minute after passing waypoint',
       'Midpoint Check winds and times',
       'ETP CDU FIX page - updated'
-    ], 's4');
+    ], 4);
     
     // ═══ PAGE 2 ═══
-    checkPage(80);
+    checkPage(100);
     
     drawSection('ENROUTE - AFTER EDTO EXIT POINT', [
       'Mach Number',
@@ -762,7 +721,7 @@
       'FMC Position - Checked',
       'Fuel Crossfeed Valve',
       'ETL Entry - after shutdown'
-    ], 's5');
+    ], 5);
     
     drawSection('NON-NORMALS', [
       'Re-Routing',
@@ -774,117 +733,80 @@
       'Weather Contingency',
       'Non-Comms Contingency',
       'Other Non-Normal'
-    ], 's6');
+    ], 6);
     
-    // ═══ Trainer Comments ═══
+    // ═══ TRAINER COMMENTS ═══
     checkPage(35);
     y += 3;
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(10);
-    doc.text('Trainer Comments', margin + 2, y);
+    doc.text('Trainer Comments', M + 2, y);
     y += 6;
-    
     doc.setDrawColor(0);
-    const commentsH = 25;
-    doc.rect(margin, y, contentW, commentsH);
-    
+    doc.rect(M, y, CW, 22);
     if (data.instructorComments) {
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(8);
-      const lines = doc.splitTextToSize(data.instructorComments, contentW - 6);
-      lines.forEach((line, i) => {
-        if (i < 6) doc.text(line, margin + 3, y + 5 + (i * 4));
-      });
+      const lines = doc.splitTextToSize(data.instructorComments, CW - 6);
+      lines.forEach((line, i) => { if (i < 5) doc.text(line, M + 3, y + 5 + i * 4); });
     }
-    y += commentsH + 10;
+    y += 28;
     
-    // ═══ Signatures ═══
+    // ═══ SIGNATURES ═══
     checkPage(25);
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(9);
     
-    // Trainer Name + Signature
-    doc.text('Trainer Name:', margin + 2, y);
-    doc.line(margin + 28, y + 1, 85, y + 1);
-    if (data.trainerName) {
-      doc.setFont('helvetica', 'bold');
-      doc.text(data.trainerName, margin + 29, y);
-      doc.setFont('helvetica', 'normal');
-    }
-    doc.text('Trainer Signature:', 90, y);
-    // No underline for signature - just space for signature
-    
-    // Trainer signature image if available
+    // Trainer
+    doc.text('Trainer Name:', M + 2, y);
+    doc.line(M + 28, y + 1, 80, y + 1);
+    if (data.trainerName) { doc.setFont('helvetica', 'bold'); doc.text(data.trainerName, M + 29, y); doc.setFont('helvetica', 'normal'); }
+    doc.text('Trainer Signature:', 85, y);
     if (data.trainerSignature && data.trainerSignature.startsWith('data:')) {
-      try {
-        doc.addImage(data.trainerSignature, 'PNG', 115, y - 5, 40, 8);
-      } catch(e) {}
+      try { doc.addImage(data.trainerSignature, 'PNG', 110, y - 6, 45, 10); } catch(e) {}
     }
     y += 12;
     
-    // Trainee Name + Signature
-    doc.text('Trainee Name:', margin + 2, y);
-    doc.line(margin + 28, y + 1, 85, y + 1);
-    if (data.footerTraineeName || data.traineeName) {
-      doc.setFont('helvetica', 'bold');
-      doc.text(data.footerTraineeName || data.traineeName, margin + 29, y);
-      doc.setFont('helvetica', 'normal');
-    }
-    doc.text('Trainee Signature:', 90, y);
-    
-    // Trainee signature image if available
+    // Trainee
+    doc.text('Trainee Name:', M + 2, y);
+    doc.line(M + 28, y + 1, 80, y + 1);
+    if (data.footerTraineeName || data.traineeName) { doc.setFont('helvetica', 'bold'); doc.text(data.footerTraineeName || data.traineeName, M + 29, y); doc.setFont('helvetica', 'normal'); }
+    doc.text('Trainee Signature:', 85, y);
     if (data.traineeSignature && data.traineeSignature.startsWith('data:')) {
-      try {
-        doc.addImage(data.traineeSignature, 'PNG', 115, y - 5, 40, 8);
-      } catch(e) {}
+      try { doc.addImage(data.traineeSignature, 'PNG', 110, y - 6, 45, 10); } catch(e) {}
     }
     y += 15;
     
-    // ═══ General Comments ═══
+    // ═══ GENERAL COMMENTS ═══
     checkPage(30);
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(10);
     doc.text('General Comments or Recommendations', 105, y, { align: 'center' });
     y += 6;
-    
-    const genH = 20;
     doc.setDrawColor(0);
-    doc.rect(margin, y, contentW, genH);
-    
+    doc.rect(M, y, CW, 20);
     if (data.generalComments) {
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(8);
-      const lines = doc.splitTextToSize(data.generalComments, contentW - 6);
-      lines.forEach((line, i) => {
-        if (i < 5) doc.text(line, margin + 3, y + 5 + (i * 4));
-      });
+      const lines = doc.splitTextToSize(data.generalComments, CW - 6);
+      lines.forEach((line, i) => { if (i < 5) doc.text(line, M + 3, y + 5 + i * 4); });
     }
-    y += genH + 10;
+    y += 26;
     
-    // ═══ Prepared by Section ═══
-    checkPage(20);
-    doc.setFont('helvetica', 'normal');
+    // ═══ PREPARED BY ═══
+    checkPage(15);
     doc.setFontSize(9);
-    doc.text('Signature / Stamp', 55, y + 3);
-    doc.text('Date', rightEdge - 35, y + 3);
+    doc.text('Signature / Stamp', 50, y + 3);
+    doc.text('Date', PAGE_W - M - 35, y + 3);
     y += 6;
     doc.line(30, y, 100, y);
-    doc.line(rightEdge - 55, y, rightEdge - 5, y);
+    doc.line(PAGE_W - M - 55, y, PAGE_W - M - 5, y);
+    if (data.preparedBy) { doc.setFont('helvetica', 'bold'); doc.setFontSize(8); doc.text(data.preparedBy, 35, y - 2); }
+    if (data.preparedDate) { doc.setFont('helvetica', 'bold'); doc.text(data.preparedDate, PAGE_W - M - 52, y - 2); }
     
-    if (data.preparedBy) {
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(8);
-      doc.text(data.preparedBy, 35, y - 2);
-    }
-    if (data.preparedDate) {
-      doc.setFont('helvetica', 'bold');
-      doc.text(data.preparedDate, rightEdge - 52, y - 2);
-    }
-    
-    // Footer
     doc.setFont('helvetica', 'italic');
     doc.setFontSize(7);
-    doc.text('Page 2 of 2', 105, pageH - 5, { align: 'center' });
+    doc.text('Page 2 of 2', 105, PAGE_H - 5, { align: 'center' });
     
     return doc.output('datauristring');
   }
