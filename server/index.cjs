@@ -194,7 +194,8 @@ app.post('/api/forms/edto/submit', async (req, res) => {
 
     // If PDF base64 provided, save it
     if (data.pdfBase64) {
-      const buf = Buffer.from(data.pdfBase64.replace(/^data:application\/pdf;base64,/, ''), 'base64');
+      const base64Data = data.pdfBase64.replace(/^data:[^;]+;base64,/, '');
+      const buf = Buffer.from(base64Data, 'base64');
       fs.writeFileSync(pdfPath, buf);
     }
 
