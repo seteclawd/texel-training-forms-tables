@@ -598,9 +598,9 @@
     doc.text('Date:', 65, ry);
     doc.line(72, ry + 1, 100, ry + 1);
     if (data.date) { doc.setFont('helvetica', 'bold'); doc.text(data.date, 73, ry); doc.setFont('helvetica', 'normal'); }
-    doc.text('EDTO Validity Expiry:', 110, ry);
-    doc.line(135, ry + 1, PAGE_W - M - 2, ry + 1);
-    if (data.edtoExpiry) { doc.setFont('helvetica', 'bold'); doc.text(data.edtoExpiry, 136, ry); doc.setFont('helvetica', 'normal'); }
+    doc.text('EDTO Validity Expiry:', 140, ry);
+    doc.line(165, ry + 1, PAGE_W - M - 2, ry + 1);
+    if (data.edtoExpiry) { doc.setFont('helvetica', 'bold'); doc.text(data.edtoExpiry, 166, ry); doc.setFont('helvetica', 'normal'); }
     
     ry += 7;
     doc.text('Location:', M + 2, ry);
@@ -643,25 +643,19 @@
       
       groups.forEach((group, gIdx) => {
         checkPage(8);
-        const gKey = 's' + secId + '-g' + gIdx;  // Group key: s1-g0, s1-g1, etc.
+        const gKey = 's' + secId + '-g' + gIdx;
         const gStatus = data.checklist ? data.checklist[gKey] : '';
         
-        // Group title (bold) with checkboxes
+        // Group title (bold)
         doc.setFont('helvetica', 'bold');
         doc.setFontSize(8);
-        doc.text(group.title, M + 2, y + 1);
+        doc.text(group.title, M + 4, y + 1);
         
-        // Checkboxes for group
+        // Checkboxes for group (no signature lines)
         drawCheckbox(COL_CHK, gStatus === 'pass');
         drawCheckbox(COL_REDO, gStatus === 'fail');
         
-        // Signature line for group
-        doc.setDrawColor(180, 180, 180);
-        doc.line(COL_SIG, y + 2, COL_SIG + 16, y + 2);
-        doc.line(COL_3LC, y + 2, COL_3LC + 10, y + 2);
-        doc.setDrawColor(0);
-        
-        // Draw trainer signature if available
+        // Draw trainer signature image if available (no placeholder lines)
         if (data.itemSignatures && data.itemSignatures[gKey]) {
           const sigs = data.itemSignatures[gKey];
           if (sigs.trainer && sigs.trainer.startsWith('data:')) {
@@ -671,7 +665,7 @@
         
         y += 6;
         
-        // Sub-items (indented, no checkboxes)
+        // Sub-items (indented with triangle bullet)
         doc.setFont('helvetica', 'normal');
         doc.setFontSize(7);
         group.items.forEach(item => {
