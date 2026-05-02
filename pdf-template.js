@@ -191,10 +191,7 @@ function generatePDFCode() {
           });
         }
         y += 1;
-        // Section separator line
-        doc.setDrawColor(180, 180, 180);
-        doc.line(M, y, M + CW, y);
-        y += 1;
+        
       });
     }
     
@@ -278,11 +275,7 @@ function generatePDFCode() {
         }
         y += 4;
       });
-      // Section separator line
-      y += 1;
-      doc.setDrawColor(180, 180, 180);
-      doc.line(M, y, M + CW, y);
-      y += 1;
+      
       // Section separator line
       doc.setDrawColor(180, 180, 180);
       doc.line(M, y, M + CW, y);
@@ -325,7 +318,7 @@ function generatePDFCode() {
       { t: 'Flight Plan Route - Enter FPL into FMC', n: '7' },
       { t: 'Route Leg Winds - Insert winds', n: '8' },
       { t: 'EDTO Tracks and Distances - Verified and Checked', n: '9' }
-    ], 3);
+    ], 2);
     
     drawFlatSection('ENROUTE - PRIOR TO EDTO ENTRY POINT', [
       { t: 'EDTO Clearance (40 Minutes before)', n: '1' },
@@ -344,7 +337,7 @@ function generatePDFCode() {
       { t: '10 Minute after passing waypoint', n: '14' },
       { t: 'Midpoint Check winds and times', n: '15' },
       { t: 'ETP CDU FIX page - updated', n: '16' }
-    ], 4);
+    ], 3);
     
     drawFlatSection('ENROUTE - AFTER EDTO EXIT POINT', [
       { t: 'Mach Number', n: '1' },
@@ -353,7 +346,7 @@ function generatePDFCode() {
       { t: 'FMC Position - Checked', n: '4' },
       { t: 'Fuel Crossfeed Valve', n: '5' },
       { t: 'ETL Entry - after shutdown', n: '6' }
-    ], 5);
+    ], 4);
     
     drawSectionWithItemChecks('NON-NORMALS', [
       { t: 'Re-Routing', n: '1' },
@@ -365,7 +358,7 @@ function generatePDFCode() {
       { t: 'Weather Contingency', n: '7' },
       { t: 'Non-Comms Contingency', n: '8' },
       { t: 'Other Non-Normal', n: '9' }
-    ], 6);
+    ], 5);
     
     // ═══ TRAINER COMMENTS ═══
     checkPage(40);

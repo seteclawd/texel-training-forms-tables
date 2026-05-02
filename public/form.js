@@ -10,21 +10,21 @@
 
   // Groups-based structure: each group has one checkbox pair
   const SECTIONS = [
-    { id: 1, title: 'FLIGHT PREPARATION BRIEFING', groups: [
-      { title: 'Route Briefing Contents:', num: '1.1', items: [
+    { id: 1, title: '1. FLIGHT PREPARATION BRIEFING', groups: [
+      { title: '1.1 Route Briefing Contents:', num: '', items: [
         { t: 'TAFS & METARS for destination, alternates & ERAs', n: 'a' },
         { t: 'NOTAMS for destination, Alternates and ERAs and route', n: 'b' },
         { t: 'SIG WX & Upper Wind Charts', n: 'c' },
         { t: 'SIGMETS', n: 'd' }
       ]},
-      { title: 'Flight Plan:', num: '1.2', items: [
+      { title: '1.2 Flight Plan:', num: '', items: [
         { t: 'Check Flt No. Date, Route & A/C Registration', n: 'a' },
         { t: 'Note - Max FL, average W/C and Max Shear', n: 'b' },
         { t: 'Note - Trip fuel and flight time', n: 'c' },
         { t: 'Note - Critical Fuel - Calculate diversion fuel', n: 'd' },
         { t: 'Note - TOTAL FUEL', n: 'e' }
       ]},
-      { title: 'FD Pro Route/Waypoints:', num: '1.3', items: [
+      { title: '1.3 FD Pro Route/Waypoints:', num: '', items: [
         { t: 'Insert OFP Route', n: 'a' },
         { t: 'Create and insert ENTRY and EXIT waypoints', n: 'b' },
         { t: 'Verify EDTO waypoints (incl. EDTO Entry and Exit points)', n: 'c' },
@@ -32,55 +32,55 @@
         { t: 'No-Go Areas', n: 'e' }
       ]}
     ]},
-    { id: 3, title: 'PRE-FLIGHT', groups: null, items: [
-      { t: 'Aircraft Status', n: '1', sub: [
-        { t: 'Consult MEL', n: '2', sub: [
-          { t: 'RVSM Requirements', n: '3' },
-          { t: 'EDTO Requirements', n: '4' }
+    { id: 2, title: '2. PRE-FLIGHT', groups: null, items: [
+      { t: 'Aircraft Status', n: '2.1', sub: [
+        { t: 'Consult MEL', n: '1', sub: [
+          { t: 'RVSM Requirements', n: 'a' },
+          { t: 'EDTO Requirements', n: 'b' }
         ]}
       ]},
-      { t: 'Fuel Crossfeed Valve - i.a.w. FCOM Fuel Crossfeed Valve Check', n: '5' },
-      { t: 'Aircraft Clocks - UTC set', n: '6' },
-      { t: 'Flight Plan Route - Enter FPL into FMC', n: '7' },
-      { t: 'Route Leg Winds - Insert winds', n: '8' },
-      { t: 'EDTO Tracks and Distances - Verified and Checked', n: '9' }
+      { t: 'Fuel Crossfeed Valve - i.a.w. FCOM Fuel Crossfeed Valve Check', n: '2.2' },
+      { t: 'Aircraft Clocks - UTC set', n: '2.3' },
+      { t: 'Flight Plan Route - Enter FPL into FMC', n: '2.4' },
+      { t: 'Route Leg Winds - Insert winds', n: '2.5' },
+      { t: 'EDTO Tracks and Distances - Verified and Checked', n: '2.6' }
     ]},
-    { id: 4, title: 'ENROUTE - PRIOR TO EDTO ENTRY POINT', groups: null, items: [
-      { t: 'EDTO Clearance (40 Minutes before)', n: '1' },
-      { t: 'Weather from OCC - SATPHONE 30 minutes before', n: '2' },
-      { t: 'APU 15 minutes before ENTRY point', n: '3' },
-      { t: 'EDTO Significant Systems Operation', n: '4' },
-      { t: 'FMC Position - Check', n: '5' },
-      { t: 'FMC Route - If changed then confirm modification (CPDLC)', n: '6' },
-      { t: 'CDU FIX page - adequate AD 428nm ARCs', n: '7' },
-      { t: 'Flight Level and Mach Number - as cleared', n: '8' },
-      { t: 'HF and SELCAL - Checked', n: '9' },
-      { t: 'Radios and Transponder', n: '10' },
-      { t: 'Approaching Waypoints TRK and DIST', n: '11' },
-      { t: 'Passing Each Waypoint Actual Track', n: '12' },
-      { t: 'Position Report', n: '13' },
-      { t: '10 Minute after passing waypoint', n: '14' },
-      { t: 'Midpoint Check winds and times', n: '15' },
-      { t: 'ETP CDU FIX page - updated', n: '16' }
+    { id: 3, title: '3. ENROUTE - PRIOR TO EDTO ENTRY POINT', groups: null, items: [
+      { t: 'EDTO Clearance (40 Minutes before)', n: '3.1' },
+      { t: 'Weather from OCC - SATPHONE 30 minutes before', n: '3.2' },
+      { t: 'APU 15 minutes before ENTRY point', n: '3.3' },
+      { t: 'EDTO Significant Systems Operation', n: '3.4' },
+      { t: 'FMC Position - Check', n: '3.5' },
+      { t: 'FMC Route - If changed then confirm modification (CPDLC)', n: '3.6' },
+      { t: 'CDU FIX page - adequate AD 428nm ARCs', n: '3.7' },
+      { t: 'Flight Level and Mach Number - as cleared', n: '3.8' },
+      { t: 'HF and SELCAL - Checked', n: '3.9' },
+      { t: 'Radios and Transponder', n: '3.10' },
+      { t: 'Approaching Waypoints TRK and DIST', n: '3.11' },
+      { t: 'Passing Each Waypoint Actual Track', n: '3.12' },
+      { t: 'Position Report', n: '3.13' },
+      { t: '10 Minute after passing waypoint', n: '3.14' },
+      { t: 'Midpoint Check winds and times', n: '3.15' },
+      { t: 'ETP CDU FIX page - updated', n: '3.16' }
     ]},
-    { id: 5, title: 'ENROUTE - AFTER EDTO EXIT POINT', groups: null, items: [
-      { t: 'Mach Number', n: '1' },
-      { t: 'CDU Offset (If applied during EDTO)', n: '2' },
-      { t: 'Cruise FL - Review', n: '3' },
-      { t: 'FMC Position - Checked', n: '4' },
-      { t: 'Fuel Crossfeed Valve', n: '5' },
-      { t: 'ETL Entry - after shutdown', n: '6' }
+    { id: 4, title: '4. ENROUTE - AFTER EDTO EXIT POINT', groups: null, items: [
+      { t: 'Mach Number', n: '4.1' },
+      { t: 'CDU Offset (If applied during EDTO)', n: '4.2' },
+      { t: 'Cruise FL - Review', n: '4.3' },
+      { t: 'FMC Position - Checked', n: '4.4' },
+      { t: 'Fuel Crossfeed Valve', n: '4.5' },
+      { t: 'ETL Entry - after shutdown', n: '4.6' }
     ]},
-    { id: 6, title: 'NON-NORMALS', groups: null, items: [
-      { t: 'Re-Routing', n: '1', check: true },
-      { t: 'Diversion Planning', n: '2', check: true },
-      { t: 'MEL - APU Fault', n: '3', check: true },
-      { t: 'Engine Non-Normal requiring diversion', n: '4', check: true },
-      { t: 'Pressurisation Non-Normal requiring diversion', n: '5', check: true },
-      { t: 'Navigation Non-Normal', n: '6', check: true },
-      { t: 'Weather Contingency', n: '7', check: true },
-      { t: 'Non-Comms Contingency', n: '8', check: true },
-      { t: 'Other Non-Normal', n: '9', check: true }
+    { id: 5, title: '5. NON-NORMALS', groups: null, items: [
+      { t: 'Re-Routing', n: '5.1', check: true },
+      { t: 'Diversion Planning', n: '5.2', check: true },
+      { t: 'MEL - APU Fault', n: '5.3', check: true },
+      { t: 'Engine Non-Normal requiring diversion', n: '5.4', check: true },
+      { t: 'Pressurisation Non-Normal requiring diversion', n: '5.5', check: true },
+      { t: 'Navigation Non-Normal', n: '5.6', check: true },
+      { t: 'Weather Contingency', n: '5.7', check: true },
+      { t: 'Non-Comms Contingency', n: '5.8', check: true },
+      { t: 'Other Non-Normal', n: '5.9', check: true }
     ]}
   ];
 
@@ -706,10 +706,7 @@
           });
         }
         y += 1;
-        // Section separator line
-        doc.setDrawColor(180, 180, 180);
-        doc.line(M, y, M + CW, y);
-        y += 1;
+        
       });
     }
     
@@ -793,11 +790,7 @@
         }
         y += 4;
       });
-      // Section separator line
-      y += 1;
-      doc.setDrawColor(180, 180, 180);
-      doc.line(M, y, M + CW, y);
-      y += 1;
+      
       // Section separator line
       doc.setDrawColor(180, 180, 180);
       doc.line(M, y, M + CW, y);
@@ -840,7 +833,7 @@
       { t: 'Flight Plan Route - Enter FPL into FMC', n: '7' },
       { t: 'Route Leg Winds - Insert winds', n: '8' },
       { t: 'EDTO Tracks and Distances - Verified and Checked', n: '9' }
-    ], 3);
+    ], 2);
     
     drawFlatSection('ENROUTE - PRIOR TO EDTO ENTRY POINT', [
       { t: 'EDTO Clearance (40 Minutes before)', n: '1' },
@@ -859,7 +852,7 @@
       { t: '10 Minute after passing waypoint', n: '14' },
       { t: 'Midpoint Check winds and times', n: '15' },
       { t: 'ETP CDU FIX page - updated', n: '16' }
-    ], 4);
+    ], 3);
     
     drawFlatSection('ENROUTE - AFTER EDTO EXIT POINT', [
       { t: 'Mach Number', n: '1' },
@@ -868,7 +861,7 @@
       { t: 'FMC Position - Checked', n: '4' },
       { t: 'Fuel Crossfeed Valve', n: '5' },
       { t: 'ETL Entry - after shutdown', n: '6' }
-    ], 5);
+    ], 4);
     
     drawSectionWithItemChecks('NON-NORMALS', [
       { t: 'Re-Routing', n: '1' },
@@ -880,7 +873,7 @@
       { t: 'Weather Contingency', n: '7' },
       { t: 'Non-Comms Contingency', n: '8' },
       { t: 'Other Non-Normal', n: '9' }
-    ], 6);
+    ], 5);
     
     // ═══ TRAINER COMMENTS ═══
     checkPage(40);
