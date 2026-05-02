@@ -456,7 +456,7 @@
     const COL_CHK = 113;      // Satisfactorily Completed
     const COL_REDO = 138;     // Incomplete or Redo
     const COL_SIG = 163;      // Trainer Signature
-    const COL_3LC = 200;      // Trainer Texel 3LC
+    const COL_3LC = 182;      // Trainer Texel 3LC
     const BOX = 5;            // Checkbox size (bigger for groups)
     
     function checkPage(needed) {
@@ -594,10 +594,11 @@
         // NON-NORMALS (secId=6): only show sig/3LC on fail; others: always
         const isNonNormal = secId === 6;
         const showSigs = !isNonNormal || gStatus === 'fail';
+        
         if (showSigs && (data.trainerSignature || data.trainerCode)) {
           if (data.trainerSignature && data.trainerSignature.startsWith('data:')) {
             try {
-              doc.addImage(data.trainerSignature, 'PNG', COL_SIG, y - 3, 12, 5);
+              doc.addImage(data.trainerSignature, 'PNG', COL_SIG, y - 4, 16, 7);
             } catch(e) {}
           }
           if (data.trainerCode) {
