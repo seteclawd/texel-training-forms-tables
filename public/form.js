@@ -574,9 +574,9 @@
     doc.text('Date: 11-12-2025', PAGE_W - M - 20, 14);
     y = 20;
     
-    // ═══ TRAINEE DETAILS BOX ═══
+        // ═══ TRAINEE DETAILS BOX ═══
     doc.setLineWidth(0.3);
-    doc.rect(M, y, CW, 30);
+    doc.rect(M, y, CW, 35);
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(9);
     doc.text('Trainee and Simulator Details', 105, y + 5, { align: 'center' });
@@ -585,45 +585,50 @@
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(8);
     
-    // Row 1: Trainee Name | Rank (short line) | Licence No.
+    // Row 1: Trainee Name | Rank | Licence No.
     doc.text('Trainee Name:', M + 2, ry);
-    doc.line(M + 26, ry + 1, 100, ry + 1);
-    if (data.traineeName) { doc.setFont('helvetica', 'bold'); doc.text(data.traineeName, M + 28, ry); doc.setFont('helvetica', 'normal'); }
-    doc.text('Rank:', 105, ry);
-    doc.line(117, ry + 1, 135, ry + 1);
-    if (data.traineeRank) { doc.setFont('helvetica', 'bold'); doc.text(data.traineeRank, 118, ry); doc.setFont('helvetica', 'normal'); }
-    doc.text('Licence No.:', 140, ry);
-    doc.line(160, ry + 1, PAGE_W - M - 2, ry + 1);
-    if (data.licenceNo) { doc.setFont('helvetica', 'bold'); doc.text(data.licenceNo, 161, ry); doc.setFont('helvetica', 'normal'); }
+    const traineeNameX = M + 28;
+    const traineeNameEndX = 88;
+    doc.line(traineeNameX, ry + 1, traineeNameEndX, ry + 1);
+    if (data.traineeName) { doc.setFont('helvetica', 'bold'); doc.text(data.traineeName, traineeNameX, ry); doc.setFont('helvetica', 'normal'); }
     
-    // Row 2: Type of session | Simulator/Aircraft X | Date
-    ry += 7;
+    doc.text('Rank:', 92, ry);
+    const rankEndX = 112;
+    doc.line(104, ry + 1, rankEndX, ry + 1);
+    if (data.traineeRank) { doc.setFont('helvetica', 'bold'); doc.text(data.traineeRank, 105, ry); doc.setFont('helvetica', 'normal'); }
+    
+    doc.text('Licence No.:', 116, ry);
+    doc.line(138, ry + 1, PAGE_W - M - 2, ry + 1);
+    if (data.licenceNo) { doc.setFont('helvetica', 'bold'); doc.text(data.licenceNo, 139, ry); doc.setFont('helvetica', 'normal'); }
+    
+    // Row 2: Type of session | Simulator/Aircraft | Sim Registration
+    ry += 8;
     doc.text('Type of session:', M + 2, ry);
     if (data.sessionType) { doc.setFont('helvetica', 'bold'); doc.text(data.sessionType, M + 33, ry); doc.setFont('helvetica', 'normal'); }
+    
+    // Simulator/Aircraft checkboxes
+    doc.setFont('helvetica', 'normal');
     doc.text('[ ] Simulator', 65, ry);
-    if (data.sessionType === 'Simulator') { doc.setFont('helvetica', 'bold'); doc.text('[X]', 65, ry); doc.setFont('helvetica', 'normal'); }
-    doc.text('[ ] Aircraft', 100, ry);
-    if (data.sessionType === 'Aircraft') { doc.setFont('helvetica', 'bold'); doc.text('[X]', 100, ry); doc.setFont('helvetica', 'normal'); }
-    doc.text('Date:', 140, ry);
-    doc.line(152, ry + 1, PAGE_W - M - 2, ry + 1);
-    if (data.date) { doc.setFont('helvetica', 'bold'); doc.text(formatDate(data.date), 153, ry); doc.setFont('helvetica', 'normal'); }
+    doc.text('[ ] Aircraft', 98, ry);
+    if (data.sessionType === 'Simulator') { doc.setFont('helvetica', 'bold'); doc.text('[X]', 65, ry); }
+    if (data.sessionType === 'Aircraft') { doc.setFont('helvetica', 'bold'); doc.text('[X]', 98, ry); }
+    doc.setFont('helvetica', 'normal');
     
-    // Row 3: Location | Sim Registration
-    ry += 7;
-    doc.text('Location:', M + 2, ry);
-    doc.line(M + 22, ry + 1, 95, ry + 1);
-    if (data.location) { doc.setFont('helvetica', 'bold'); doc.text(data.location, M + 23, ry); doc.setFont('helvetica', 'normal'); }
-    doc.text('Sim Registration:', 100, ry);
-    doc.line(130, ry + 1, PAGE_W - M - 2, ry + 1);
-    if (data.simRegistration) { doc.setFont('helvetica', 'bold'); doc.text(data.simRegistration, 131, ry); doc.setFont('helvetica', 'normal'); }
+    doc.text('Sim Registration:', 132, ry);
+    doc.line(158, ry + 1, PAGE_W - M - 2, ry + 1);
+    if (data.simRegistration) { doc.setFont('helvetica', 'bold'); doc.text(data.simRegistration, 159, ry); doc.setFont('helvetica', 'normal'); }
     
-    // Row 4: EDTO Validity Expiry
-    ry += 7;
-    doc.text('EDTO Validity Expiry:', M + 2, ry);
-    doc.line(M + 47, ry + 1, 100, ry + 1);
-    if (data.edtoExpiry) { doc.setFont('helvetica', 'bold'); doc.text(formatDate(data.edtoExpiry), M + 48, ry); doc.setFont('helvetica', 'normal'); }
+    // Row 3: Date | EDTO Validity Expiry
+    ry += 8;
+    doc.text('Date:', M + 2, ry);
+    doc.line(M + 14, ry + 1, 65, ry + 1);
+    if (data.date) { doc.setFont('helvetica', 'bold'); doc.text(formatDate(data.date), M + 15, ry); doc.setFont('helvetica', 'normal'); }
     
-    y = 62;
+    doc.text('EDTO Validity Expiry:', 70, ry);
+    doc.line(108, ry + 1, 150, ry + 1);
+    if (data.edtoExpiry) { doc.setFont('helvetica', 'bold'); doc.text(formatDate(data.edtoExpiry), 109, ry); doc.setFont('helvetica', 'normal'); }
+    
+    y = 72;
     
     // ═══ COLUMN HEADERS ═══
     doc.setFillColor(200, 220, 240);
