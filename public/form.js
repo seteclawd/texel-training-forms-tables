@@ -108,6 +108,7 @@
       crewMembers.length = 0;
       crewMembers.push(...data);
       const sel = document.getElementById('traineeName');
+      const trainerSel = document.getElementById('trainerName');
       crewMembers.sort((a,b) => a.name.localeCompare(b.name)).forEach(c => {
         const opt = document.createElement('option');
         opt.value = c.code;
@@ -115,6 +116,9 @@
         opt.dataset.rank = c.position;
         opt.dataset.licence = c.licence || '';
         sel.appendChild(opt);
+        // Also populate trainer select
+        const topt = opt.cloneNode(true);
+        trainerSel.appendChild(topt);
       });
     } catch (e) {
       console.warn('Failed to load crew, using offline cache if available');
@@ -127,6 +131,16 @@
     document.getElementById('traineeRank').value = opt.dataset.rank || '';
     document.getElementById('licenceNo').value = opt.dataset.licence || '';
     document.getElementById('footerTraineeName').value = opt.textContent.split(' (')[0] || '';
+  };
+
+  window.onTrainerChange = function() {
+    const sel = document.getElementById('trainerName');
+    const opt = sel.options[sel.selectedIndex];
+    window._trainerCode = opt ? opt.value : '';
+  };
+
+  window.getTrainerCode = function() {
+    return window._trainerCode || '';
   };
 
   // ── IndexedDB ────────────────────────────────────────────────────────
@@ -180,24 +194,9 @@
             <div class="checklist-actions">
               <button class="btn-check pass ${checklistState[key]==='pass'?'active':''}" onclick="setCheck('${key}','pass')">✅ Completed</button>
               <button class="btn-check fail ${checklistState[key]==='fail'?'active':''}" onclick="setCheck('${key}','fail')">❌ Redo</button>
-              <button class="btn-toggle-sigs ${itemSignatures[key].trainer || itemSignatures[key].trainee ? 'active' : ''}" id="btn-sig-${key}" onclick="toggleItemSigs('${key}')">✍️ Sigs</button>
             </div>
           </div>
           <div class="group-items">${group.items.map(i => `<div class="sub-item">\u25B8 ${escapeHtml(i)}</div>`).join('')}</div>
-          <div class="item-sigs" id="sigs-${key}">
-            <div class="sig-pair">
-              <div class="sig-mini-wrap">
-                <label>Trainer</label>
-                <canvas id="sig-tr-${key}" class="sig-mini" width="200" height="60"></canvas>
-                <button class="btn-clear-mini" onclick="clearSig('sig-tr-${key}')">Clear</button>
-              </div>
-              <div class="sig-mini-wrap">
-                <label>Trainee</label>
-                <canvas id="sig-tt-${key}" class="sig-mini" width="200" height="60"></canvas>
-                <button class="btn-clear-mini" onclick="clearSig('sig-tt-${key}')">Clear</button>
-              </div>
-            </div>
-          </div>
         `;
         container.appendChild(row);
       });
@@ -483,6 +482,7 @@
       checklist: { ...checklistState },
       itemSignatures: itemSigs,
       trainerName: document.getElementById('trainerName').value,
+      trainerCode: window._trainerCode || '',
       trainerSignature: includeSigs ? getSignatureData('trainerSig') : '',
       traineeSignature: includeSigs ? getSignatureData('traineeSig') : '',
       footerTraineeName: document.getElementById('footerTraineeName').value,
@@ -659,17 +659,17 @@
         drawCheckbox(COL_CHK, gStatus === 'pass');
         drawCheckbox(COL_REDO, gStatus === 'fail');
         
-        // Trainer signature - use per-item or fallback to main trainer signature
-        let sigToShow = '';
-        if (data.itemSignatures && data.itemSignatures[gKey] && data.itemSignatures[gKey].trainer) {
-          sigToShow = data.itemSignatures[gKey].trainer;
-        } else if (data.trainerSignature && data.trainerSignature.startsWith('data:')) {
-          sigToShow = data.trainerSignature;
-        }
-        if (sigToShow && sigToShow.startsWith('data:')) {
+        // Trainer signature (from main signature at bottom)
+        if (data.trainerSignature && data.trainerSignature.startsWith('data:')) {
           try {
-            doc.addImage(sigToShow, 'PNG', COL_SIG, y - 3, 12, 5);
+            doc.addImage(data.trainerSignature, 'PNG', COL_SIG, y - 3, 12, 5);
           } catch(e) {}
+        }
+        // Trainer 3LC code
+        if (data.trainerCode) {
+          doc.setFont('helvetica', 'bold');
+          doc.setFontSize(7);
+          doc.text(data.trainerCode, COL_3LC, y);
         }
         
         y += 5;

@@ -152,17 +152,17 @@ function generatePDFCode() {
         drawCheckbox(COL_CHK, gStatus === 'pass');
         drawCheckbox(COL_REDO, gStatus === 'fail');
         
-        // Trainer signature - use per-item or fallback to main trainer signature
-        let sigToShow = '';
-        if (data.itemSignatures && data.itemSignatures[gKey] && data.itemSignatures[gKey].trainer) {
-          sigToShow = data.itemSignatures[gKey].trainer;
-        } else if (data.trainerSignature && data.trainerSignature.startsWith('data:')) {
-          sigToShow = data.trainerSignature;
-        }
-        if (sigToShow && sigToShow.startsWith('data:')) {
+        // Trainer signature (from main signature at bottom)
+        if (data.trainerSignature && data.trainerSignature.startsWith('data:')) {
           try {
-            doc.addImage(sigToShow, 'PNG', COL_SIG, y - 3, 12, 5);
+            doc.addImage(data.trainerSignature, 'PNG', COL_SIG, y - 3, 12, 5);
           } catch(e) {}
+        }
+        // Trainer 3LC code
+        if (data.trainerCode) {
+          doc.setFont('helvetica', 'bold');
+          doc.setFontSize(7);
+          doc.text(data.trainerCode, COL_3LC, y);
         }
         
         y += 5;
