@@ -4,6 +4,7 @@
   // ── Data ────────────────────────────────────────────────────────────
   const crewMembers = [];
   let checklistState = {};
+  let itemSignatures = {}; // { key: { trainer: '', trainee: '' } }
   const DB_NAME = 'TexelFormsDB';
   const STORE_NAME = 'drafts';
   const DRAFT_KEY = 'edto-draft';
@@ -80,6 +81,7 @@
     await initIndexedDB();
     renderChecklist();
     initSignatures();
+    initAllItemSigs();
     initAutoSave();
     setupDateDefaults();
     await loadDraft();
@@ -154,13 +156,32 @@
       sec.items.forEach((item, idx) => {
         const key = `s${sec.id}-i${idx}`;
         if (!checklistState[key]) checklistState[key] = '';
+        if (!itemSignatures[key]) itemSignatures[key] = { trainer: '', trainee: '' };
+
         const row = document.createElement('div');
-        row.className = 'checklist-item';
+        row.style.borderBottom = '1px solid #1a3a5f';
         row.innerHTML = `
-          <span class="checklist-text">${escapeHtml(item)}</span>
-          <div class="checklist-actions">
-            <button class="btn-check pass ${checklistState[key]==='pass'?'active':''}" onclick="setCheck('${key}','pass')">✅ Completed</button>
-            <button class="btn-check fail ${checklistState[key]==='fail'?'active':''}" onclick="setCheck('${key}','fail')">❌ Redo</button>
+          <div class="checklist-item">
+            <span class="checklist-text">${escapeHtml(item)}</span>
+            <div class="checklist-actions">
+              <button class="btn-check pass ${checklistState[key]==='pass'?'active':''}" onclick="setCheck('${key}','pass')">✅ Completed</button>
+              <button class="btn-check fail ${checklistState[key]==='fail'?'active':''}" onclick="setCheck('${key}','fail')">❌ Redo</button>
+              <button class="btn-toggle-sigs ${itemSignatures[key].trainer || itemSignatures[key].trainee ? 'active' : ''}" id="btn-sig-${key}" onclick="toggleItemSigs('${key}')">✍️ Sigs</button>
+            </div>
+          </div>
+          <div class="item-sigs" id="sigs-${key}">
+            <div class="sig-pair">
+              <div class="sig-mini-wrap">
+                <label>Trainer</label>
+                <canvas id="sig-tr-${key}" class="sig-mini" width="200" height="60"></canvas>
+                <button class="btn-clear-mini" onclick="clearSig('sig-tr-${key}')">Clear</button>
+              </div>
+              <div class="sig-mini-wrap">
+                <label>Trainee</label>
+                <canvas id="sig-tt-${key}" class="sig-mini" width="200" height="60"></canvas>
+                <button class="btn-clear-mini" onclick="clearSig('sig-tt-${key}')">Clear</button>
+              </div>
+            </div>
           </div>
         `;
         container.appendChild(row);
@@ -169,10 +190,78 @@
     updateProgressAll();
   }
 
+  window.toggleItemSigs = function(key) {
+    const el = document.getElementById(`sigs-${key}`);
+    const btn = document.getElementById(`btn-sig-${key}`);
+    if (el.classList.contains('visible')) {
+      el.classList.remove('visible');
+      btn.classList.remove('active');
+    } else {
+      el.classList.add('visible');
+      btn.classList.add('active');
+      // Ensure canvases are initialized
+      initItemCanvas(`sig-tr-${key}`);
+      initItemCanvas(`sig-tt-${key}`);
+    }
+  };
+
+  function initAllItemSigs() {
+    // Canvases are initialized lazily on toggle
+  }
+
+  function initItemCanvas(id) {
+    const canvas = document.getElementById(id);
+    if (!canvas || canvas.dataset.inited) return;
+    canvas.dataset.inited = '1';
+    const ctx = canvas.getContext('2d');
+    ctx.strokeStyle = '#000';
+    ctx.lineWidth = 1.5;
+    ctx.lineCap = 'round';
+
+    let drawing = false;
+    let last = null;
+
+    function getPos(e) {
+      const rect = canvas.getBoundingClientRect();
+      const scaleX = canvas.width / rect.width;
+      const scaleY = canvas.height / rect.height;
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      return { x: (clientX - rect.left) * scaleX, y: (clientY - rect.top) * scaleY };
+    }
+
+    function start(e) {
+      e.preventDefault();
+      drawing = true;
+      last = getPos(e);
+    }
+    function move(e) {
+      e.preventDefault();
+      if (!drawing) return;
+      const pos = getPos(e);
+      ctx.beginPath();
+      ctx.moveTo(last.x, last.y);
+      ctx.lineTo(pos.x, pos.y);
+      ctx.stroke();
+      last = pos;
+    }
+    function end() { drawing = false; }
+
+    canvas.addEventListener('mousedown', start);
+    canvas.addEventListener('mousemove', move);
+    canvas.addEventListener('mouseup', end);
+    canvas.addEventListener('mouseleave', end);
+    canvas.addEventListener('touchstart', start, {passive:false});
+    canvas.addEventListener('touchmove', move, {passive:false});
+    canvas.addEventListener('touchend', end);
+  }
+
   window.setCheck = function(key, val) {
     checklistState[key] = checklistState[key] === val ? '' : val;
     document.querySelectorAll(`button[onclick*="'${key}'"]`).forEach(btn => {
-      btn.classList.remove('active');
+      if (btn.classList.contains('pass') || btn.classList.contains('fail')) {
+        btn.classList.remove('active');
+      }
     });
     if (checklistState[key]) {
       const btn = document.querySelector(`button[onclick="setCheck('${key}','${val}')"]`);
@@ -305,13 +394,28 @@
         checklistState = { ...draft.checklist };
         Object.keys(checklistState).forEach(key => {
           if (checklistState[key]) {
-            document.querySelectorAll(`button[onclick*="'${key}'"]`).forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll(`button[onclick*="'${key}'"]`).forEach(btn => {
+              if (btn.classList.contains('pass') || btn.classList.contains('fail')) {
+                btn.classList.remove('active');
+              }
+            });
             const btn = document.querySelector(`button[onclick="setCheck('${key}','${checklistState[key]}')"]`);
             if (btn) btn.classList.add('active');
           }
         });
         updateProgressAll();
       }
+      if (draft.itemSignatures) {
+        itemSignatures = { ...draft.itemSignatures };
+        Object.keys(itemSignatures).forEach(key => {
+          const sigs = itemSignatures[key];
+          if (sigs.trainer || sigs.trainee) {
+            const btn = document.getElementById(`btn-sig-${key}`);
+            if (btn) btn.classList.add('active');
+          }
+        });
+      }
+      if (draft.preparedBy) document.getElementById('preparedBy').value = draft.preparedBy;
     } catch (e) { console.warn('Could not load draft', e); }
   }
 
@@ -329,6 +433,19 @@
   function collectFormData(includeSigs = true) {
     const sel = document.getElementById('traineeName');
     const opt = sel.options[sel.selectedIndex];
+    // Collect per-item signatures
+    const itemSigs = {};
+    if (includeSigs) {
+      Object.keys(itemSignatures).forEach(key => {
+        const tr = getSignatureData(`sig-tr-${key}`);
+        const tt = getSignatureData(`sig-tt-${key}`);
+        itemSigs[key] = { trainer: tr, trainee: tt };
+      });
+    } else {
+      Object.keys(itemSignatures).forEach(key => {
+        itemSigs[key] = { ...itemSignatures[key] };
+      });
+    }
     return {
       traineeCode: sel.value,
       traineeName: opt ? opt.textContent.split(' (')[0] : '',
@@ -340,11 +457,13 @@
       edtoExpiry: document.getElementById('edtoExpiry').value,
       location: document.getElementById('location').value,
       checklist: { ...checklistState },
+      itemSignatures: itemSigs,
       trainerName: document.getElementById('trainerName').value,
       trainerSignature: includeSigs ? getSignatureData('trainerSig') : '',
       traineeSignature: includeSigs ? getSignatureData('traineeSig') : '',
       footerTraineeName: document.getElementById('footerTraineeName').value,
-      generalComments: document.getElementById('generalComments').value
+      generalComments: document.getElementById('generalComments').value,
+      preparedBy: document.getElementById('preparedBy').value
     };
   }
 
@@ -405,7 +524,7 @@
     addLine(`Location: ${data.location}`);
     y += 4;
 
-    // Checklist sections
+    // Checklist sections with per-item signatures
     SECTIONS.forEach(sec => {
       addH(`${sec.id}. ${sec.title}`);
       sec.items.forEach((item, idx) => {
@@ -413,6 +532,24 @@
         const val = data.checklist[key];
         const mark = val === 'pass' ? '✓' : val === 'fail' ? '✗' : '○';
         addLine(`${mark} ${item}`, { indent: true });
+        // Per-item signatures
+        const sigs = data.itemSignatures && data.itemSignatures[key];
+        if (sigs) {
+          if (sigs.trainer) {
+            doc.addImage(sigs.trainer, 'PNG', 22, y, 30, 10);
+            doc.setFontSize(7);
+            doc.setFont('helvetica', 'normal');
+            doc.text('Trainer', 22, y+12);
+            y += 14;
+          }
+          if (sigs.trainee) {
+            doc.addImage(sigs.trainee, 'PNG', 60, y-14, 30, 10);
+            doc.setFontSize(7);
+            doc.setFont('helvetica', 'normal');
+            doc.text('Trainee', 60, y);
+            y += 4;
+          }
+        }
       });
       y += 2;
     });
@@ -437,12 +574,18 @@
     doc.text(`Trainee: ${data.footerTraineeName || data.traineeName}`, 80, y+10);
     y += 24;
     doc.text(`Date: ${data.date}`, 10, y);
+    y += lineH;
+    if (data.preparedBy) {
+      doc.text(`Prepared by: ${data.preparedBy}`, 10, y);
+    }
 
     return doc.output('datauristring');
   }
 
-  // ── Submit ───────────────────────────────────────────────────────────
-  window.submitForm = async function() {
+  // ── Preview & Submit ───────────────────────────────────────────────
+  let currentPDFData = null;
+
+  window.previewPDF = async function() {
     const data = collectFormData(true);
     const err = validate(data);
     const valMsg = document.getElementById('validationMsg');
@@ -455,26 +598,51 @@
 
     const btn = document.getElementById('submitBtn');
     btn.disabled = true;
-    btn.textContent = 'Submitting...';
+    btn.textContent = 'Generating...';
 
     try {
-      // Load jsPDF from CDN dynamically if not loaded
       if (!window.jspdf) {
         await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js');
       }
       const pdfBase64 = await generatePDF(data);
-      data.pdfBase64 = pdfBase64;
+      currentPDFData = { ...data, pdfBase64 };
 
+      // Show preview
+      const frame = document.getElementById('previewFrame');
+      frame.src = pdfBase64;
+      document.getElementById('previewModal').classList.add('visible');
+    } catch (e) {
+      alert('PDF generation failed: ' + e.message);
+      console.error(e);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Preview PDF';
+    }
+  };
+
+  window.closePreview = function() {
+    document.getElementById('previewModal').classList.remove('visible');
+    document.getElementById('previewFrame').src = '';
+  };
+
+  window.sendForm = async function() {
+    if (!currentPDFData) return;
+    const btn = document.getElementById('sendBtn');
+    btn.disabled = true;
+    btn.textContent = 'Sending...';
+
+    try {
       const res = await fetch('/api/forms/edto/submit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
+        body: JSON.stringify(currentPDFData)
       });
       const result = await res.json();
       if (result.success) {
+        document.getElementById('previewModal').classList.remove('visible');
         document.getElementById('successModal').classList.add('visible');
-        // Clear draft
         await dbPut(DRAFT_KEY, null);
+        currentPDFData = null;
       } else {
         throw new Error(result.error || 'Unknown error');
       }
@@ -483,7 +651,7 @@
       console.error(e);
     } finally {
       btn.disabled = false;
-      btn.textContent = 'Submit Form';
+      btn.textContent = 'Send Form';
     }
   };
 

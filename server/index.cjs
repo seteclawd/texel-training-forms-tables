@@ -44,14 +44,20 @@ db.exec(`
     edto_expiry TEXT,
     location TEXT,
     checklist_json TEXT,
+    item_signatures_json TEXT,
     trainer_name TEXT,
     trainer_signature TEXT,
     trainee_signature TEXT,
     general_comments TEXT,
+    prepared_by TEXT,
     submitted_at TEXT,
     pdf_path TEXT
   );
 `);
+
+// Migrate: add new columns if table already exists without them
+try { db.prepare(`ALTER TABLE forms ADD COLUMN item_signatures_json TEXT`).run(); } catch (e) { /* exists */ }
+try { db.prepare(`ALTER TABLE forms ADD COLUMN prepared_by TEXT`).run(); } catch (e) { /* exists */ }
 
 // Seed crew if empty
 const count = db.prepare('SELECT COUNT(*) as c FROM crew').get().c;
@@ -111,7 +117,9 @@ if (count === 0) {
 
 // Email transporter
 const transporter = nodemailer.createTransport({
-  service: 'gmail',
+  host: 'smtp.gmail.com',
+  port: 587,
+  secure: false,
   auth: {
     user: 'sete.manuals@gmail.com',
     pass: 'tlexqdwkhplnlkzn'
@@ -156,8 +164,8 @@ app.post('/api/forms/edto/submit', async (req, res) => {
 
     // Save to DB
     const result = db.prepare(`
-      INSERT INTO forms (form_type, trainee_code, trainee_name, trainee_rank, sim_registration, session_type, date, edto_expiry, location, checklist_json, trainer_name, trainer_signature, trainee_signature, general_comments, submitted_at)
-      VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+      INSERT INTO forms (form_type, trainee_code, trainee_name, trainee_rank, sim_registration, session_type, date, edto_expiry, location, checklist_json, item_signatures_json, trainer_name, trainer_signature, trainee_signature, general_comments, prepared_by, submitted_at)
+      VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
     `).run(
       'EDTO',
       data.traineeCode || '',
@@ -169,10 +177,12 @@ app.post('/api/forms/edto/submit', async (req, res) => {
       data.edtoExpiry || '',
       data.location || '',
       JSON.stringify(data.checklist || {}),
+      JSON.stringify(data.itemSignatures || {}),
       data.trainerName || '',
       data.trainerSignature || '',
       data.traineeSignature || '',
       data.generalComments || '',
+      data.preparedBy || '',
       submittedAt
     );
 
@@ -201,6 +211,7 @@ Date: ${data.date}
 Session Type: ${data.sessionType}
 Location: ${data.location}
 Trainer: ${data.trainerName}
+Prepared by: ${data.preparedBy || 'N/A'}
 
 General Comments:
 ${data.generalComments || 'None'}
