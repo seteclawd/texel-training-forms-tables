@@ -1,0 +1,17 @@
+{
+  "name": "texel-training-forms",
+  "version": "1.0.0",
+  "description": "Texel Air Training Forms PWA",
+  "main": "server/index.cjs",
+  "scripts": {
+    "start": "node server/index.cjs",
+    "dev": "node server/index.cjs"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "better-sqlite3": "^9.4.3",
+    "nodemailer": "^6.9.13",
+    "jspdf": "^2.5.1",
+    "cors": "^2.8.5"
+  }
+}
