@@ -967,7 +967,7 @@
 
     try {
       if (!window.jspdf) {
-        await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js'); console.log('jsPDF loaded:', typeof window.jspdf);
+        await loadScript('/vendor/jspdf.umd.min.js'); console.log('jsPDF loaded:', typeof window.jspdf);
       }
       const pdfBase64 = await generatePDF(data); console.log("PDF generated, length:", (pdfBase64||"").length);
       currentPDFData = { ...data, pdfBase64 };
