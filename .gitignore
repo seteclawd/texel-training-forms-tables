@@ -1,1 +1,9 @@
 .env
+node_modules/
+.wrangler/
+*.db
+*.db-wal
+*.db-shm
+*.sqlite
+seed.sql
+data/
